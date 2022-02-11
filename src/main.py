@@ -19,7 +19,7 @@ class WordleClient(discord.Client):
         '''
         channel = self.get_channel(id)
         messages = await channel.history(limit=1000).flatten()
-        self.leaderboards[id] = WordleHistoryState()
+        self.channel_states[id] = WordleHistoryState()
         for message in messages:
             if message.author.bot is True:
                 continue
@@ -33,7 +33,7 @@ class WordleClient(discord.Client):
             for message in messages:
                 self.__proccess_message__(message, WORDLE_DAILY_CHANNEL)
 
-    def __proccess_message__(self, message: discord.Message, overrided_leaderboard_id: str = None):
+    async def __proccess_message__(self, message: discord.Message, overrided_leaderboard_id: str = None):
         """
         Process message from anywhere and add it to the state of the bot.
 
@@ -43,14 +43,18 @@ class WordleClient(discord.Client):
             Instead of adding this message to the original channel's leaderboard, you may override it to another board.
             This functionality is built-in for consolidating leaderboards from multiple channels into just one. (if needed)
         """
+        channel_id = overrided_leaderboard_id if overrided_leaderboard_id else message.channel.id
         message_content = message.content.strip()
         if message.author.bot is True or not is_wordle_share(message_content):
             return
+        # if we're processing a message and we haven't imported that data yet, let's import it here.
+        # typically, we only add to state (memory) on demand to lower cpu/mem usage. but we should make an adjustment on this case.
+        if not channel_id in self.channel_states:
+            await self.__channel_import__(channel_id)
         lines = message_content.split('\n')
         wordle_id = int(str(lines[0][7:10]))
         won_on_try, max_tries = find_try_ratio(lines[0])
-        id = overrided_leaderboard_id if overrided_leaderboard_id else message.channel.id
-        self.leaderboards[id].add_wordle(player_id=message.author.display_name,
+        self.channel_states[id].add_wordle(player_id=message.author.display_name,
                                          wordle_id=wordle_id,
                                          won_on_try_num=won_on_try,
                                          total_num_tries=max_tries,
@@ -66,7 +70,7 @@ class WordleClient(discord.Client):
 
     async def on_ready(self):
         print('We have logged in as {0.user}'.format(client))
-        self.leaderboards = dict()  # <channel_id str: WordleHistoryState>
+        self.channel_states = dict()  # <channel_id str: WordleHistoryState>
 
     async def on_message(self, message):
         if message.author.bot: return
@@ -76,13 +80,17 @@ class WordleClient(discord.Client):
         if message.content.startswith('$hello'):
             await message.channel.send('Hello!\n v0.0.2 \nBetter Wordle Bot says hello!')
             return
+        
+        if message.content == '$restart':
+            await self.__channel_import__(channel_for_leaderboard)
+            await message.channel.send('The wordle bot has restarted.')
 
         if message.content == '$leaderboard':
             channel_for_leaderboard = message.channel.id
-            # channel_for_leaderboard = WORDLE_DAILY_CHANNEL
-            if channel_for_leaderboard not in self.leaderboards:
+            channel_for_leaderboard = WORDLE_DAILY_CHANNEL
+            if channel_for_leaderboard not in self.channel_states:
                 await self.__channel_import__(channel_for_leaderboard)
-            all_stats_df = self.leaderboards.get(
+            all_stats_df = self.channel_states.get(
                 channel_for_leaderboard).create_all_stats_df()
             embed = self.__make_leaderboard_embed__(
                 "Leaderboard", all_stats_df)
