@@ -3,11 +3,12 @@ import discord
 import pandas
 from pyparsing import line
 from wordle import is_wordle_share, find_try_ratio, WordleHistoryState
+
 config = dotenv_values(".env")
 
+# Custom VARS for custom situational logic. Does not affect using this bot in other servers.
 WORDLE_DAILY_CHANNEL = 937390252576886845
 MAIN_CHANNEL = 731718737694162977
-
 
 class WordleClient(discord.Client):
 
@@ -27,7 +28,6 @@ class WordleClient(discord.Client):
         # Custom logic for "ToG" Server
         # We have the first few wordle sessions in the main channel, so we want to port it over to the wordle channel board instead.
         if id == WORDLE_DAILY_CHANNEL:
-            # import main
             channel = self.get_channel(MAIN_CHANNEL)
             messages = await channel.history(limit=1000).flatten()
             for message in messages:
@@ -69,11 +69,13 @@ class WordleClient(discord.Client):
         self.leaderboards = dict()  # <channel_id str: WordleHistoryState>
 
     async def on_message(self, message):
-        if message.author.bot:
-            return
+        if message.author.bot: return
+        if message.content == '$shutdown': exit(0)
 
-        if message.content == '$shutdown':
-            exit(0)
+
+        if message.content.startswith('$hello'):
+            await message.channel.send('Hello!\n v0.0.2 \nBetter Wordle Bot says hello!')
+            return
 
         if message.content == '$leaderboard':
             channel_for_leaderboard = message.channel.id
@@ -87,11 +89,9 @@ class WordleClient(discord.Client):
             await message.channel.send(embed=embed)
             return
 
-        if message.content.startswith('$hello'):
-            await message.channel.send('Hello!\n v0.0.2 \nBetter Wordle Bot says hello!!')
-
         if message.content.startswith('$help'):
             await message.channel.send('If this is an emergency, please dial 911. \nSupported commands: `$leaderboard`, `$hello`, `$help`')
+            return
 
         # Process these messages so we don't need to recalculate everything again.
         self.__proccess_message__(message)
