@@ -88,14 +88,14 @@ class WordleClient(discord.Client):
             await message.channel.send('If this is an emergency, please dial 911. \nSupported commands: `$leaderboard`')
 
         # store new wordles so we don't need to import again 
-        # TODO: Not working...
+        # TODO: Not working... 
         if is_wordle_share(message.content.strip()):
             message_content = message.content.strip()
             lines = message_content.split('\n')
             wordle_id = int(str(lines[0][7:10]))
             won_on_try, max_tries = find_try_ratio(
                 lines[0])  # just give header
-            self.leaderboards[id].add_wordle(player_id=message.author.display_name,
+            self.leaderboards[message.channel.id].add_wordle(player_id=message.author.display_name,
                                                 wordle_id=wordle_id,
                                                 won_on_try_num=won_on_try,
                                                 total_num_tries=max_tries,
