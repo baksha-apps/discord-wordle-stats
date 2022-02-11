@@ -88,7 +88,7 @@ class WordleClient(discord.Client):
             return
 
         if message.content.startswith('$hello'):
-            await message.channel.send('Hello!\n v0.0.1 \nBetter Worlde Bot says hello!!')
+            await message.channel.send('Hello!\n v0.0.2 \nBetter Wordle Bot says hello!!')
 
         if message.content.startswith('$help'):
             await message.channel.send('If this is an emergency, please dial 911. \nSupported commands: `$leaderboard`, `$hello`, `$help`')
