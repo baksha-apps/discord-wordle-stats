@@ -3,4 +3,5 @@
 .DS_STORE
 .ipynb_checkpoints/*
 __pycache__/*
+.pytest_cache/*
 src/__pycache__/*
