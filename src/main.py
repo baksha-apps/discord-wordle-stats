@@ -9,6 +9,7 @@ config = dotenv_values(".env")
 class WordleClient(discord.Client):
 
     async def __channel_import__(self, id: str):
+        print(id)
         channel = self.get_channel(id)
         messages = await channel.history(limit=1000).flatten()
         print('messages len', len(messages))
@@ -49,20 +50,21 @@ class WordleClient(discord.Client):
             exit(0)
 
         if message.content == '$leaderboard':
-            if message.channel.id not in self.leaderboards:
-                await self.__channel_import__(message.channel.id)
-            all_stats_df = self.leaderboards.get(
-                message.channel.id).create_all_stats_df()
+            # channel_for_leaderboard = message.channel.id
+            channel_for_leaderboard = 937390252576886845
+            if channel_for_leaderboard not in self.leaderboards:
+                await self.__channel_import__(channel_for_leaderboard)
+            all_stats_df = self.leaderboards.get(channel_for_leaderboard).create_all_stats_df()
             embed = self.__make_leaderboard_embed__("Leaderboard", all_stats_df)
-            # await message.channel.send(embed=embed)
+            await message.channel.send(embed=embed)
             return
 
         if message.content.startswith('$hello'):
             await message.channel.send('Hello!\n v0.0.1 \nBetter Worlde Bot says hello!!')
 
         # store new wordles so we don't need to import again
-        if message.author.bot is False and is_wordle_share(message.content):
-            lines = message.content.split('\n')
+        if message.author.bot is False and is_wordle_share(message.content.strip()):
+            lines = message.content.strip().split('\n')
             wordle_id = int(str(lines[0][7:10]))
             won_on_try, max_tries = find_try_ratio(
                 lines[0])  # just give header
