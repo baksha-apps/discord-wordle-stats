@@ -1,9 +1,9 @@
-from stats import is_wordle_share
+from wordle import is_wordle_share, find_try_ratio
 import pytest
 
 # is_wordle_share TESTS
 def test_is_wordle_share_true():
-    sample = '''Wordle 215 4/6
+    valid_wordle = '''Wordle 215 4/6
 
 🟩⬛⬛⬛⬛
 🟩🟩⬛⬛⬛
@@ -11,10 +11,10 @@ def test_is_wordle_share_true():
 🟩🟩🟩🟩🟩
 '''
     
-    assert is_wordle_share(sample) == True    
+    assert is_wordle_share(valid_wordle) == True    
 
 def test_is_wordle_share_false():
-    sample = '''Nondle 215 4/6
+    invalid_wordle = '''Nondle 215 4/6
 
 🟩⬛⬛⬛⬛
 🟩🟩⬛⬛⬛
@@ -22,4 +22,28 @@ def test_is_wordle_share_false():
 🟩🟩🟩🟩🟩
 '''
     
-    assert is_wordle_share(sample) == False    
+    assert is_wordle_share(invalid_wordle) == False    
+
+def test_find_try_ratio_4of6():
+    wordle = '''Nondle 215 4/6
+
+🟩⬛⬛⬛⬛
+🟩🟩⬛⬛⬛
+🟩🟩🟨🟩⬛
+🟩🟩🟩🟩🟩
+'''
+    
+    assert find_try_ratio(wordle) == (4, 6)
+
+def test_find_try_ratio_Xof6():
+    wordle = '''Nondle 215 X/6
+
+🟩⬛⬛⬛⬛
+🟩🟩⬛⬛⬛
+🟩🟩🟨🟩⬛
+⬛⬛⬛⬛⬛
+⬛⬛⬛⬛⬛
+⬛⬛⬛⬛⬛
+'''
+    
+    assert find_try_ratio(wordle) == (None, 6)
