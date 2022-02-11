@@ -39,6 +39,7 @@ class WordleHistoryState:
 
     def create_all_stats_df(self):  # wordle df
         wordle_df = self.world_df
+        print(wordle_df)
         allstatsdf = pd.DataFrame()
         allstatsdf["total_games"] = wordle_df.groupby(
             wordle_df.player_id).size()

@@ -95,7 +95,7 @@ class WordleClient(discord.Client):
             wordle_id = int(str(lines[0][7:10]))
             won_on_try, max_tries = find_try_ratio(
                 lines[0])  # just give header
-            self.leaderboards[id].add_wordle(player_id=message.author.display_name,
+            self.leaderboards[message.channel.id].add_wordle(player_id=message.author.display_name,
                                                 wordle_id=wordle_id,
                                                 won_on_try_num=won_on_try,
                                                 total_num_tries=max_tries,
