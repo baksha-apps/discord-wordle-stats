@@ -1,3 +1,6 @@
 .env
 *.env
 .DS_STORE
+.ipynb_checkpoints/*
+__pycache__/*
+src/__pycache__/*

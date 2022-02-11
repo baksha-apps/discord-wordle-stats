@@ -15,6 +15,6 @@ async def on_message(message):
         return
 
     if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+        await message.channel.send('Hello!\n v0.0.1 \nBetter Worlde Bot says hello!!')
 
 client.run(config["BOT_TOKEN"])
