@@ -85,10 +85,9 @@ class WordleClient(discord.Client):
             await message.channel.send('Hello!\n v0.0.1 \nBetter Worlde Bot says hello!!')
         
         if message.content.startswith('$help'):
-            await message.channel.send('If this is an emergency, please dial 911. \nSupported commands: `$leaderboard`')
+            await message.channel.send('If this is an emergency, please dial 911. \nSupported commands: `$leaderboard`, `$hello`, `$help`')
 
         # store new wordles so we don't need to import again 
-        # TODO: Not working... 
         if is_wordle_share(message.content.strip()):
             message_content = message.content.strip()
             lines = message_content.split('\n')
