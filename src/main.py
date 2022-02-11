@@ -77,7 +77,7 @@ class WordleClient(discord.Client):
 
         if message.content == '$leaderboard':
             channel_for_leaderboard = message.channel.id
-            channel_for_leaderboard = WORDLE_DAILY_CHANNEL
+            # channel_for_leaderboard = WORDLE_DAILY_CHANNEL
             if channel_for_leaderboard not in self.leaderboards:
                 await self.__channel_import__(channel_for_leaderboard)
             all_stats_df = self.leaderboards.get(
