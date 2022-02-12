@@ -47,11 +47,12 @@ def __make_today_embed__(title: str, avg_turn_won: float, percent_of_winners: fl
     """
     embed = discord.Embed(title=f"__**{title}:**__", color=discord.Color.from_rgb(255, 255, 0))
     for index, row in df.iterrows():
-        embed.add_field(name=f'**{index + 1}) {row.player_id}** @ `{row.won_on_try_num}/6`',
-                        value=f'> {humanize.naturaltime(row.created_date)}\n',
+        embed.add_field(name=f'**{index + 1}) {row.player_id}**',
+                        value=f'> `{row.won_on_try_num}/6`\n'
+                              f'> {humanize.naturaltime(row.created_date)}\n',
                         inline=True)
-    embed.add_field(name=f'**Overall Daily Statistics**',
-                    value=f'-------------------------',
+    embed.add_field(name=f'\n__**Overall Daily Statistics**__',
+                    value=f':tarvW:',
                     inline=False)
     embed.add_field(name=f"\t Winning Percentage",
                     value=f"`{percent_of_winners * 100}`%")
