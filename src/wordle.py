@@ -88,7 +88,7 @@ class WordleHistoryState:
         """
         self.__prepare_for_computation__()
         df = self.wordle_df
-        # maybe we try to reset time zone?
+        # maybe we try to reset time zone? - don't know if it is doing anything, too scared to change
         df.created_date = pd\
             .to_datetime(df.created_date, unit='ms')\
             .dt.tz_localize('UTC')\
