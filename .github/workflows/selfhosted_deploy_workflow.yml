@@ -23,7 +23,7 @@ jobs:
         run: |-
           docker build . -t app
       - name: Kill all other dockers (only other image deployed atm)
-        run: |-
+        run: |
           docker kill $(docker ps -q)
       - name: Run
         run: |-
