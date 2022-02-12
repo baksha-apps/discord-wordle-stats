@@ -2,6 +2,7 @@ import os, time
 from dotenv import dotenv_values
 import discord
 import pandas
+import humanize
 from wordle import is_wordle_share, find_try_ratio, WordleHistoryState, find_wordle_id
 
 config = dotenv_values(".env")
@@ -23,13 +24,13 @@ def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
             win_percent                  float64
             started_date          datetime64[ns]
     """
-    embed = discord.Embed(title=f"__**{title}:**__", color=0x03f8fc)
+    embed = discord.Embed(title=f"__**{title}:**__", color=discord.Color.from_rgb(204, 0, 0))
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
-                        value=f'Total Games: {row.total_games}\n'
-                              f'> Averaging: {row.avg_won_on_attempt}/6\n'
-                              f'> Win %: {row.win_percent}\n'
-                              f'> Started: {row.started_date}',
+                        value=f'Total Games: `{row.total_games}`\n'
+                              f'> Averaging: `{row.avg_won_on_attempt}/6`\n'
+                              f'> Win %: `{row.win_percent}`\n'
+                              f'> Playing since: {row.started_date.strftime("%l:%M%p %Z on %b %d, %Y")}',
                         inline=False)
     return embed
 
@@ -44,19 +45,18 @@ def __make_today_embed__(title: str, avg_turn_won: float, percent_of_winners: fl
         total_num_tries            object
         created_date       datetime64[ns]
     """
-    embed = discord.Embed(title=f"__**{title}:**__", color=0x03f8fc)
+    embed = discord.Embed(title=f"__**{title}:**__", color=discord.Color.from_rgb(255, 255, 0))
     for index, row in df.iterrows():
-        embed.add_field(name=f'**{index + 1}) {row.player_id}**',
-                        value=f'> {row.won_on_try_num}/6\n'
-                              f'> Time: {row.created_date}\n',
-                        inline=False)
+        embed.add_field(name=f'**{index + 1}) {row.player_id}** @ `{row.won_on_try_num}/6`',
+                        value=f'> {humanize.naturaltime(row.created_date)}\n',
+                        inline=True)
     embed.add_field(name=f'**Overall Daily Statistics**',
                     value=f'-------------------------',
                     inline=False)
     embed.add_field(name=f"\t Winning Percentage",
-                    value=f"{percent_of_winners * 100}%")
-    embed.add_field(name=f"\t Avg turn won on: %",
-                    value=f"{avg_turn_won}")
+                    value=f"`{percent_of_winners * 100}`%")
+    embed.add_field(name=f"\t Avg turn won on:",
+                    value=f"`{avg_turn_won}`")
     embed.set_footer(text=f"Today was a great day!")
     return embed
 
