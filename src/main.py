@@ -9,6 +9,7 @@ config = dotenv_values(".env")
 WORDLE_DAILY_CHANNEL = 937390252576886845
 MAIN_CHANNEL = 731718737694162977
 
+TEST_IN_TEST_SV = True
 
 def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
     """
@@ -28,6 +29,33 @@ def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
                               f'> Win %: {row.win_percent}\n'
                               f'> Started: {row.started_date}',
                         inline=False)
+    return embed
+
+
+def __make_today_embed__(title: str, avg_turn_won: float, percent_of_winners: float, df: pandas.DataFrame):
+    """
+    :param: df pandas.DataFrame
+    with columns: *sorted
+        player_id                  object
+        wordle_id                  object
+        won_on_try_num            float64
+        total_num_tries            object
+        created_date       datetime64[ns]
+    """
+    embed = discord.Embed(title=f"__**{title}:**__", color=0x03f8fc)
+    for index, row in df.iterrows():
+        embed.add_field(name=f'**{index + 1}) {row.player_id}**',
+                        value=f'> {row.won_on_try_num}/6\n'
+                              f'> Time: {row.created_date}\n',
+                        inline=False)
+    embed.add_field(name=f'**Overall Daily Statistics**',
+                    value=f'-------------------------',
+                    inline=False)
+    embed.add_field(name=f"\t Winning Percentage",
+                    value= f"{percent_of_winners * 100}%")
+    embed.add_field(name=f"\t Avg turn won on: %",
+                    value= f"{avg_turn_won}")
+    embed.set_footer(text=f"Today was a great day!")
     return embed
 
 
@@ -108,15 +136,25 @@ class WordleClient(discord.Client):
             await message.channel.send('The wordle bot has restarted.')
 
         if message.content == '$leaderboard':
-            channel_id = message.channel.id
-            # channel_id = WORDLE_DAILY_CHANNEL
+            channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
             all_stats_df = self.channel_states.get(
                 channel_id
-            ).create_all_stats_df()
+            ).compute_all_stats_df()
             embed = __make_leaderboard_embed__(
                 "Leaderboard", all_stats_df)
+            await message.channel.send(embed=embed)
+            return
+
+        if message.content == '$today':
+            channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
+            if channel_id not in self.channel_states:
+                await self.__channel_import__(channel_id)
+            wid, avg_turn_won, percent_of_winners, df = self.channel_states.get(
+                channel_id
+            ).compute_daily_df()
+            embed = __make_today_embed__(f"Wordle {wid}", avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
             return
 
@@ -127,7 +165,6 @@ class WordleClient(discord.Client):
 
         # Process these messages so we don't need to recalculate everything again.
         await self.__add_to_state__(message)
-
 
 
 client = WordleClient()
