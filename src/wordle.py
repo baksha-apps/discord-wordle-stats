@@ -11,9 +11,9 @@ def is_wordle_share(msg: str):
 
 
 def find_try_ratio(wordle_share_msg_header: str):
-    '''
-    returns: tuple (attempt, of_tries) 
-    '''
+    """
+    returns: tuple (attempt, of_tries)
+    """
     header = wordle_share_msg_header
     won_on_try = int(header[-3]) if header[-3].isdigit() else None
     max_attempts = int(header[-1])
@@ -89,10 +89,10 @@ class WordleHistoryState:
         self.__prepare_for_computation__()
         df = self.wordle_df
         # maybe we try to reset time zone? - don't know if it is doing anything, too scared to change
-        df.created_date = pd\
-            .to_datetime(df.created_date, unit='ms')\
-            .dt.tz_localize('UTC')\
-            .dt.tz_convert('US/Eastern')
+        # df.created_date = pd\
+        #     .to_datetime(df.created_date, unit='ms')\
+        #     .dt.tz_localize('UTC')\
+        #     .dt.tz_convert('US/Eastern')
         #
         df = df.loc[(date.today() == df['created_date'].dt.date)]
         df.wordle_id = pd.to_numeric(df.wordle_id)
