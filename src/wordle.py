@@ -42,10 +42,6 @@ class WordleHistoryState:
                 - it would be better if we can just overwrite duplicates on add_wordle()
         """
         self.wordle_df = self.wordle_df.drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
-        self.wordle_df.created_date = pd\
-            .to_datetime(self.wordle_df.created_date, unit='ms')\
-            .dt.tz_localize('UTC')\
-            .dt.tz_convert('US/Eastern')
 
     def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: int, total_num_tries: int,
                    created_date: datetime):
@@ -67,9 +63,9 @@ class WordleHistoryState:
             started_date          datetime64[ns]
         """
         self.__prepare_for_computation__()
-        all_stats_df = pd.DataFrame()
-        groupedby_players = self.wordle_df.groupby(self.wordle_df.player_id)
         wordle_df = self.wordle_df
+        all_stats_df = pd.DataFrame()
+        groupedby_players = wordle_df.groupby(wordle_df.player_id)
         all_stats_df["total_games"] = groupedby_players.size()
         all_stats_df["avg_won_on_attempt"] = groupedby_players.won_on_try_num.mean()
         all_stats_df['win_percent'] = (wordle_df[wordle_df['won_on_try_num'].notna()].groupby(
@@ -92,6 +88,12 @@ class WordleHistoryState:
         """
         self.__prepare_for_computation__()
         df = self.wordle_df
+        # maybe we try to reset time zone? - don't know if it is doing anything, too scared to change
+        df.created_date = pd\
+            .to_datetime(df.created_date, unit='ms')\
+            .dt.tz_localize('UTC')\
+            .dt.tz_convert('US/Eastern')
+        #
         df = df.loc[(date.today() == df['created_date'].dt.date)]
         df.wordle_id = pd.to_numeric(df.wordle_id)
         wid = df.wordle_id.value_counts().idxmax()
