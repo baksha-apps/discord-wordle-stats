@@ -1,7 +1,8 @@
+import os, time
 from dotenv import dotenv_values
 import discord
 import pandas
-from wordle import is_wordle_share, find_try_ratio, WordleHistoryState
+from wordle import is_wordle_share, find_try_ratio, WordleHistoryState, find_wordle_id
 
 config = dotenv_values(".env")
 
@@ -109,9 +110,9 @@ class WordleClient(discord.Client):
         # but we should make an adjustment on this case.
         if channel_id not in self.channel_states:
             await self.__channel_import__(channel_id)
-        lines = message_content.split('\n')
-        wordle_id = int(str(lines[0][7:10]))
-        won_on_try, max_tries = find_try_ratio(lines[0])
+        header = message_content.split('\n')[0]
+        wordle_id = find_wordle_id(header)
+        won_on_try, max_tries = find_try_ratio(header)
         self.channel_states[channel_id].add_wordle(player_id=message.author.display_name,
                                                    wordle_id=wordle_id,
                                                    won_on_try_num=won_on_try,
@@ -164,14 +165,18 @@ class WordleClient(discord.Client):
                 'If this is an emergency, please dial 911. \nSupported commands: `$leaderboard`, `$hello`, `$help`')
             return
 
-        if message.content.startswith('$time'):
-            import os, time
-            from datetime import datetime
-            await message.channel.send(f"# {time.strftime('%Y-%m-%d %H:%M:%S')}")  # before timezone change
+        # this command is to setup the time on the machine,
+        # i have not put it as a start up step
+        # because i have not found root cause
+        if message.content.startswith('$set-est-tz'):
+            if os.environ.get('TZ') == 'US/Eastern':
+                await message.channel.send(f"TZ is EST > {time.strftime('%l:%M%p %Z on %b %d, %Y')}")
+                return
+            before = time.strftime('%l:%M%p %Z on %b %d, %Y')
             os.environ['TZ'] = 'US/Eastern'  # set new timezone
-            await message.channel.send(f"# {time.strftime('%Y-%m-%d %H:%M:%S')}")  # aftr timezone change
-
             time.tzset()
+            after = time.strftime('%l:%M%p %Z on %b %d, %Y')
+            await message.channel.send(f"TZ: {before} -> {after}")  # before timezone change
             return
 
         # Process these messages so we don't need to recalculate everything again.
