@@ -42,6 +42,10 @@ class WordleHistoryState:
                 - it would be better if we can just overwrite duplicates on add_wordle()
         """
         self.wordle_df = self.wordle_df.drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
+        self.wordle_df.created_date = pd\
+            .to_datetime(self.wordle_df.created_date, unit='ms')\
+            .dt.tz_localize('UTC')\
+            .dt.tz_convert('US/Eastern')
 
     def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: int, total_num_tries: int,
                    created_date: datetime):
@@ -97,6 +101,7 @@ class WordleHistoryState:
         avg_turn_won = df.won_on_try_num.mean()
         if top:
             df = df.nlargest(top, 'won_on_try_num')
+
 
         df = df.sort_values(["won_on_try_num", "created_date"], ascending=(True, True))
         df = df.reset_index(drop=True)
