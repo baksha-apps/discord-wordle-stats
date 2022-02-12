@@ -3,7 +3,7 @@ from dotenv import dotenv_values
 import discord
 import pandas
 import humanize
-from wordle import is_wordle_share, find_try_ratio, WordleHistoryState, find_wordle_id
+from wordle import is_wordle_share, find_try_ratio, WordleHistoryState, find_wordle_id, find_solution
 
 config = dotenv_values(".env")
 
@@ -28,14 +28,14 @@ def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
                         value=f'Total Games: `{row.total_games}`\n'
-                              f'> Averaging: `{row.avg_won_on_attempt}/6`\n'
+                              f'> ||Averaging:|| `{row.avg_won_on_attempt}/6`\n'
                               f'> Win %: `{row.win_percent}`\n'
                               f'> Playing since: {row.started_date.strftime("%l:%M%p %Z on %b %d, %Y")}',
                         inline=False)
     return embed
 
 
-def __make_today_embed__(title: str, avg_turn_won: float, percent_of_winners: float, df: pandas.DataFrame):
+def __make_today_embed__(wid: int, avg_turn_won: float, percent_of_winners: float, df: pandas.DataFrame):
     """
     :param: df pandas.DataFrame
     with columns: *sorted
@@ -45,19 +45,21 @@ def __make_today_embed__(title: str, avg_turn_won: float, percent_of_winners: fl
         total_num_tries            object
         created_date       datetime64[ns]
     """
-    embed = discord.Embed(title=f"__**{title}:**__", color=discord.Color.from_rgb(255, 255, 0))
+    embed = discord.Embed(title=f"__**Wordle {wid}:**__", color=discord.Color.from_rgb(255, 255, 0))
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
                         value=f'> `{row.won_on_try_num}/6`\n'
                               f'> {humanize.naturaltime(row.created_date)}\n',
                         inline=True)
-    embed.add_field(name=f'\n__**Overall Daily Statistics**__',
+    embed.add_field(name=f'__**Overall Daily Statistics**__',
                     value=f'<:gurg:730562333251862628>',
                     inline=False)
-    embed.add_field(name=f"\t Winning Percentage",
-                    value=f"`{percent_of_winners * 100}`%")
-    embed.add_field(name=f"\t Avg turn won on:",
-                    value=f"`{avg_turn_won}`")
+    embed.add_field(name=f"How many won?",
+                    value=f"> `{percent_of_winners * 100}`%")
+    embed.add_field(name=f"Average Attempts",
+                    value=f"> `{avg_turn_won}`")
+    embed.add_field(name=f"Solution:",
+                    value=f"> ||{find_solution(wid=wid).upper()}||")
     embed.set_footer(text=f"Today was a great day!")
     return embed
 
@@ -157,7 +159,7 @@ class WordleClient(discord.Client):
             wid, avg_turn_won, percent_of_winners, df = self.channel_states.get(
                 channel_id
             ).compute_daily_df()
-            embed = __make_today_embed__(f"Wordle {wid}", avg_turn_won, percent_of_winners, df)
+            embed = __make_today_embed__(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
             return
 

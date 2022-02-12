@@ -1,9 +1,17 @@
 import re
+import numpy as np
 import pandas as pd
 from datetime import datetime, date
 
+# the words are hardcoded into the game and WID is really just index
+all_wordle_solutions = np.load("words.npy")
+
 
 # Helpers
+
+def find_solution(wid: int) -> str:
+    return all_wordle_solutions[wid]
+
 
 def find_wordle_id(wordle_share_msg_header: str):
     return int(str(wordle_share_msg_header[7:10]))
@@ -66,7 +74,7 @@ class WordleHistoryState:
             started_date          datetime64[ns]
         """
         self.__prepare_for_computation__()
-        wordle_df = self.wordle_df
+        wordle_df = self.wordle_df.copy()
         all_stats_df = pd.DataFrame()
         groupedby_players = wordle_df.groupby(wordle_df.player_id)
         all_stats_df["total_games"] = groupedby_players.size()
@@ -91,7 +99,7 @@ class WordleHistoryState:
                 created_date       datetime64[ns]
         """
         self.__prepare_for_computation__()
-        df = self.wordle_df
+        df = self.wordle_df.copy()
         df = df.loc[(date.today() == df['created_date'].dt.date)]
         df.wordle_id = pd.to_numeric(df.wordle_id)
         wid = df.wordle_id.value_counts().idxmax()
