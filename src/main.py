@@ -36,9 +36,6 @@ class WordleClient(discord.Client):
     def __init__(self, *, loop=None, **options):
         super().__init__(loop=loop, **options)
         self.channel_states = dict()  # <channel_id str: WordleHistoryState>
-        # self.COMMANDS = {
-        #     "$shutdown": lambda: exit(0)
-        # }
 
     async def __channel_import__(self, channel_id: int):
         """
@@ -130,10 +127,6 @@ class WordleClient(discord.Client):
 
         # Process these messages so we don't need to recalculate everything again.
         await self.__add_to_state__(message)
-
-    COMMANDS = [
-
-    ]
 
 
 
