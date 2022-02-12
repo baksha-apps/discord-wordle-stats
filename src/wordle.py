@@ -81,7 +81,7 @@ class WordleHistoryState:
             avg of people who won
             pandas.DataFrame with columns: *sorted
                 player_id                  object
-                wordle_id                  object
+                wordle_id                  int64
                 won_on_try_num            float64
                 total_num_tries            object
                 created_date       datetime64[ns]
@@ -89,7 +89,8 @@ class WordleHistoryState:
         self.__prepare_for_computation__()
         df = self.wordle_df
         df = df.loc[(date.today() == df['created_date'].dt.date)]
-        wid = df.wordle_id.value_counts().max()
+        df.wordle_id = pd.to_numeric(df.wordle_id)
+        wid = df.wordle_id.value_counts().idxmax()
         # df = df.loc[(wid == df['wordle_id'])]  # only show the most used wordle id to filter out bad
         percent_of_winners = df.won_on_try_num.notna().mean()
         df.won_on_try_num = pd.to_numeric(df.won_on_try_num)
