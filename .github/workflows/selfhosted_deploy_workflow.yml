@@ -3,7 +3,10 @@
 
 name: Self Hosted Deploy
 
-on: [workflow_dispatch]
+on:
+  push:
+    branches: [ develop ] # for now
+  workflow_dispatch:
 
   
 jobs:
