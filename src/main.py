@@ -52,7 +52,7 @@ def __make_today_embed__(title: str, avg_turn_won: float, percent_of_winners: fl
                               f'> {humanize.naturaltime(row.created_date)}\n',
                         inline=True)
     embed.add_field(name=f'\n__**Overall Daily Statistics**__',
-                    value=f':tarvW:',
+                    value=f'<:gurg:730562333251862628>',
                     inline=False)
     embed.add_field(name=f"\t Winning Percentage",
                     value=f"`{percent_of_winners * 100}`%")
