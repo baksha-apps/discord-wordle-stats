@@ -8,6 +8,5 @@ src/__pycache__/*
 .pytest_cache
 __pycache__
 *.pyc
-src/__pycache__/*
 .ipynb_checkpoints
 .idea/

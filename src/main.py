@@ -11,6 +11,7 @@ MAIN_CHANNEL = 731718737694162977
 
 TEST_IN_TEST_SV = True
 
+
 def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
     """
     :param: df: pandas.DataFrame
@@ -52,9 +53,9 @@ def __make_today_embed__(title: str, avg_turn_won: float, percent_of_winners: fl
                     value=f'-------------------------',
                     inline=False)
     embed.add_field(name=f"\t Winning Percentage",
-                    value= f"{percent_of_winners * 100}%")
+                    value=f"{percent_of_winners * 100}%")
     embed.add_field(name=f"\t Avg turn won on: %",
-                    value= f"{avg_turn_won}")
+                    value=f"{avg_turn_won}")
     embed.set_footer(text=f"Today was a great day!")
     return embed
 
