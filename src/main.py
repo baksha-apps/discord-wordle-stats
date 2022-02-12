@@ -143,7 +143,7 @@ class WordleClient(discord.Client):
                 channel_id
             ).compute_all_stats_df()
             embed = __make_leaderboard_embed__(
-                "Leaderboard", all_stats_df)
+                "All-time Leaderboard", all_stats_df)
             await message.channel.send(embed=embed)
             return
 
