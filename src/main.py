@@ -164,8 +164,13 @@ class WordleClient(discord.Client):
             return
 
         if message.content.startswith('$time'):
+            import os, time
             from datetime import datetime
-            await message.channel.send(f'{datetime.now()}')
+            await message.channel.send(f"# {time.strftime('%Y-%m-%d %H:%M:%S')}")  # before timezone change
+            os.environ['TZ'] = 'US/Eastern'  # set new timezone
+            await message.channel.send(f"# {time.strftime('%Y-%m-%d %H:%M:%S')}")  # aftr timezone change
+
+            time.tzset()
             return
 
         # Process these messages so we don't need to recalculate everything again.
