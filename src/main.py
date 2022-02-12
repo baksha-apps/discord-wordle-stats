@@ -163,6 +163,11 @@ class WordleClient(discord.Client):
                 'If this is an emergency, please dial 911. \nSupported commands: `$leaderboard`, `$hello`, `$help`')
             return
 
+        if message.content.startswith('$time'):
+            from datetime import datetime
+            await message.channel.send(f'{datetime.now()}')
+            return
+
         # Process these messages so we don't need to recalculate everything again.
         await self.__add_to_state__(message)
 
