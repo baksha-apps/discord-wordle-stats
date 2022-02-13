@@ -11,7 +11,11 @@ config = dotenv_values(".env")
 WORDLE_DAILY_CHANNEL = 937390252576886845
 MAIN_CHANNEL = 731718737694162977
 
-TEST_IN_TEST_SV = True  # Used when you want to pull from ^ instead of where the cmd is coming from.
+# TESTING PURPOSES: Allows you to specify a channel id to get input data from,
+# but only responds to incoming command channel. OPTIONAL.
+REDIRECT_CHANNEL = None
+if config.get('REDIRECTED_INPUT_CHANNEL'):
+    REDIRECT_CHANNEL = int(config.get('REDIRECTED_INPUT_CHANNEL'))
 
 
 def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
@@ -28,10 +32,10 @@ def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
                         value=
-                              f'Total Games: `{row.total_games}`\n'
-                              f'> Since: `{row.started_date.strftime("%m/%d/%Y").strip()}`\n'
-                              f'> Averaging: `{row.avg_won_on_attempt}/6`\n'
-                              f'> Win %: `{row.win_percent}`\n',
+                        f'Total Games: `{row.total_games}`\n'
+                        f'> Since: `{row.started_date.strftime("%m/%d/%Y").strip()}`\n'
+                        f'> Averaging: `{row.avg_won_on_attempt}/6`\n'
+                        f'> Win %: `{row.win_percent}`\n',
                         inline=True)
     return embed
 
@@ -140,17 +144,18 @@ class WordleClient(discord.Client):
             exit(0)
 
         if message.content.startswith('$hello'):
-            await message.channel.send('Hello!\n v0.0.3 \nBetter Wordle Bot says hello!')
+            await message.channel.send('Hello!\n v1.0.0 \nBetter Wordle Bot says hello!')
             return
 
         if message.content == '$reset':
             await self.__channel_import__(message.channel.id)
             await message.channel.send('The wordle bot has reset the state.')
+            return
 
         if message.content == '$leaderboard':
             channel_id = message.channel.id \
-                if not TEST_IN_TEST_SV \
-                else WORDLE_DAILY_CHANNEL
+                if not REDIRECT_CHANNEL \
+                else REDIRECT_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
             all_stats_df = self \
@@ -164,8 +169,8 @@ class WordleClient(discord.Client):
 
         if message.content == '$today':
             channel_id = message.channel.id \
-                if not TEST_IN_TEST_SV \
-                else WORDLE_DAILY_CHANNEL
+                if not REDIRECT_CHANNEL \
+                else REDIRECT_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
             wid, avg_turn_won, percent_of_winners, df = self \
@@ -178,8 +183,8 @@ class WordleClient(discord.Client):
 
         if message.content.startswith('$wordle'):
             channel_id = message.channel.id \
-                if not TEST_IN_TEST_SV \
-                else WORDLE_DAILY_CHANNEL
+                if not REDIRECT_CHANNEL \
+                else REDIRECT_CHANNEL
             wordle_id = int(message.content.split(" ")[1])
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
