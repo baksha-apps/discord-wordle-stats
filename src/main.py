@@ -12,7 +12,8 @@ config = dotenv_values(".env")
 WORDLE_DAILY_CHANNEL = 937390252576886845
 MAIN_CHANNEL = 731718737694162977
 
-TEST_IN_TEST_SV = True  # Used when you want to pull from ^ instead of where the cmd is coming from.
+# You can remove all usage of this variable if you do not want to test from an external channel.
+TEST_IN_TEST_SV = False  # Used when you want to pull from ^ instead of where the cmd is coming from.
 
 
 def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
