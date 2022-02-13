@@ -52,9 +52,9 @@ def __make_wordle_day_embed__(wid: int, avg_turn_won: float, percent_of_winners:
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
                         value=f'> `{row.won_on_try_num}/6`\n' +
-                              f'> {humanize.naturaltime(row.created_date)}'
-                        if row.created_date.date() == datetime.now().date()
-                        else f"> {row.created_date.strftime('%l:%M%p')}",
+                              (f'> {humanize.naturaltime(row.created_date)}'
+                               if row.created_date.date() == datetime.now().date()
+                               else f"> {row.created_date.strftime('%l:%M%p')}"),
                         inline=True)
         last_day_for_wid = row.created_date
     embed.add_field(name=f'__**Overall Daily Statistics**__',
