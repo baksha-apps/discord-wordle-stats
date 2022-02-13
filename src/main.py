@@ -184,7 +184,7 @@ class WordleClient(discord.Client):
         if message.content.startswith('$help'):
             await message.channel.send(
                 'If this is an emergency, please dial 911. \n'
-                'Supported commands: `$today`,`$leaderboard`, `$hello`, `$help`'
+                'Supported commands: `$today`,`$leaderboard`, `$wordle <id>`, `$hello`, `$help`'
             )
             return
 
