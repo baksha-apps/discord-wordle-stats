@@ -1,13 +1,12 @@
 # Wordle Ranking Discord Bot
 
-Use this bot in your server to enrich your Wordle gameplay in Discord!
+Use this bot in your server to enrich your Wordle game play in Discord!
 
 **Technical Notes**
 
 - This project was primarily created to learn about Docker, GitHub Actions, Self-Hosting GH Runners, and testing in Python.
 - It has many optimization points and areas of improvement before becoming a production ready Discord bot, but it works! 
 - See [issues](https://github.com/baksha97/discord-wordle-stats/issues) to file a bug, optimization, or QoL enchancement!
-- **WORKAROUND:** When running the Docker image on `SELF-HOSTED`, it does not seem to be reading the time correctly. If this occurs, please use `$time` to force the system to `EST`. 
 
 ## Features
 
