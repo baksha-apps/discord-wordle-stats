@@ -1,3 +1,13 @@
 .env
 *.env
 .DS_STORE
+.ipynb_checkpoints/*
+__pycache__/*
+.pytest_cache/*
+src/__pycache__/*
+.pytest_cache
+__pycache__
+*.pyc
+.ipynb_checkpoints
+.idea/
+src/workspace.code-workspace
