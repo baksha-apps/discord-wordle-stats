@@ -86,6 +86,32 @@ class WordleHistoryState:
         return all_stats_df.sort_values(["avg_won_on_attempt", "win_percent", "started_date"],
                                         ascending=(True, False, True)).round(1).reset_index()
 
+    def compute_day_df_for_wordle(self, wordle_id: int, top: int = None):
+        """
+        :returns:
+            avg attempts for wins
+            avg of people who won
+            pandas.DataFrame with columns: *sorted
+                player_id                  object
+                wordle_id                  int64
+                won_on_try_num            float64
+                total_num_tries            object
+                created_date       datetime64[ns]
+        """
+        self.__prepare_for_computation__()
+        df = self.wordle_df.copy()
+        df.wordle_id = pd.to_numeric(df.wordle_id)
+        df = df.loc[wordle_id == df.wordle_id]
+        percent_of_winners = df.won_on_try_num.notna().mean()
+        df.won_on_try_num = pd.to_numeric(df.won_on_try_num)
+        avg_turn_won = df.won_on_try_num.mean()
+        if top:
+            df = df.nlargest(top, 'won_on_try_num')
+
+        df = df.sort_values(["won_on_try_num", "created_date"], ascending=(True, True))
+        df = df.reset_index(drop=True)
+        return wordle_id, avg_turn_won, percent_of_winners, df
+
     def compute_daily_df(self, top: int = None):
         """
         :returns:

@@ -1,4 +1,5 @@
 import os, time
+from datetime import datetime
 from dotenv import dotenv_values
 import discord
 import pandas
@@ -35,7 +36,7 @@ def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
     return embed
 
 
-def __make_today_embed__(wid: int, avg_turn_won: float, percent_of_winners: float, df: pandas.DataFrame):
+def __make_wordle_day_embed__(wid: int, avg_turn_won: float, percent_of_winners: float, df: pandas.DataFrame):
     """
     :param: df pandas.DataFrame
     with columns: *sorted
@@ -46,11 +47,16 @@ def __make_today_embed__(wid: int, avg_turn_won: float, percent_of_winners: floa
         created_date       datetime64[ns]
     """
     embed = discord.Embed(title=f"__**Wordle {wid}:**__", color=discord.Color.from_rgb(255, 255, 0))
+    last_day_for_wid = None # should probably be part of the input ui for SoC, but too lazy.
+    # better practice would be to utilize ui models, but maybe that's too much for python
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
                         value=f'> `{row.won_on_try_num}/6`\n'
-                              f'> {humanize.naturaltime(row.created_date)}\n',
+                              f'> {humanize.naturaltime(row.created_date)}'
+                        if row.created_date.date() == datetime.now().date()
+                        else f"> {row.created_date.strftime('%l:%M%p')}",
                         inline=True)
+        last_day_for_wid = row.created_date
     embed.add_field(name=f'__**Overall Daily Statistics**__',
                     value=f'<:gurg:730562333251862628>',
                     inline=False)
@@ -60,7 +66,7 @@ def __make_today_embed__(wid: int, avg_turn_won: float, percent_of_winners: floa
                     value=f"> `{avg_turn_won}`")
     embed.add_field(name=f"Solution:",
                     value=f"> ||{find_solution(wid=wid).upper()}||")
-    embed.set_footer(text=f"Today was a great day!")
+    embed.set_footer(text=f"{last_day_for_wid.strftime('%B %d, %Y')}")
     return embed
 
 
@@ -144,34 +150,53 @@ class WordleClient(discord.Client):
             channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            all_stats_df = self.channel_states.get(
-                channel_id
-            ).compute_all_stats_df()
+            all_stats_df = self.channel_states \
+                .get(channel_id) \
+                .compute_all_stats_df()
             embed = __make_leaderboard_embed__(
                 "All-time Leaderboard", all_stats_df)
             await message.channel.send(embed=embed)
             return
 
         if message.content == '$today':
+            # Temporarily here while debugging timezone issues
+            if os.environ.get('TZ') is not None:
+                await message.channel.send(f"[DEBUG] Timezone {os.environ.get('TZ')}.")
+                return
+            #
             channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
             wid, avg_turn_won, percent_of_winners, df = self.channel_states.get(
                 channel_id
             ).compute_daily_df()
-            embed = __make_today_embed__(wid, avg_turn_won, percent_of_winners, df)
+            embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
+            await message.channel.send(embed=embed)
+            return
+
+        if message.content.startswith('$wordle'):
+            channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
+            wordle_id = int(message.content.split(" ")[1])
+            if channel_id not in self.channel_states:
+                await self.__channel_import__(channel_id)
+            wid, avg_turn_won, percent_of_winners, df = self.channel_states.get(
+                channel_id
+            ).compute_day_df_for_wordle(wordle_id)
+            embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
             return
 
         if message.content.startswith('$help'):
             await message.channel.send(
-                'If this is an emergency, please dial 911. \nSupported commands: `$leaderboard`, `$hello`, `$help`')
+                'If this is an emergency, please dial 911. \n'
+                'Supported commands: `$today`,`$leaderboard`, `$hello`, `$help`'
+            )
             return
 
         # this command is to setup the time on the machine,
         # i have not put it as a start up step
         # because i have not found root cause
-        if message.content.startswith('$set-est-tz'):
+        if message.content.startswith('$time'):
             if os.environ.get('TZ') == 'US/Eastern':
                 await message.channel.send(f"TZ is EST > {time.strftime('%l:%M%p %Z on %b %d, %Y')}")
                 return
