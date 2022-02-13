@@ -1,7 +1,7 @@
 import re
 import numpy as np
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 # the words are hardcoded into the game and WID is really just index
 all_wordle_solutions = np.load("words.npy")
@@ -52,6 +52,7 @@ class WordleHistoryState:
             - Prevents duplicate counts of shares.
                 - it would be better if we can just overwrite duplicates on add_wordle()
         """
+        self.wordle_df.created_date = self.wordle_df.created_date.dt.replace(tzinfo=timezone.utc)
         self.wordle_df = self.wordle_df.drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
 
     def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: int, total_num_tries: int,
