@@ -142,9 +142,9 @@ class WordleClient(discord.Client):
             await message.channel.send('Hello!\n v0.0.3 \nBetter Wordle Bot says hello!')
             return
 
-        if message.content == '$restart':
+        if message.content == '$reset':
             await self.__channel_import__(message.channel.id)
-            await message.channel.send('The wordle bot has restarted.')
+            await message.channel.send('The wordle bot has reset the state.')
 
         if message.content == '$leaderboard':
             channel_id = message.channel.id \
@@ -197,9 +197,6 @@ class WordleClient(discord.Client):
             )
             return
 
-        # this command is to setup the time on the machine,
-        # i have not put it as a start up step
-        # because i have not found root cause
         if message.content.startswith('$time'):
             await message.channel.send(f"**Time:** {datetime.now().strftime('%l:%M%p %Z on %b %d, %Y')}")
             return

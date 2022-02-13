@@ -2,8 +2,10 @@ import re
 import numpy as np
 import pandas as pd
 from datetime import datetime, date
+
 # the words are hardcoded into the game and WID is really just index
 all_wordle_solutions = np.load("words.npy")
+
 
 # Helpers
 
@@ -46,24 +48,26 @@ class WordleHistoryState:
     def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: int, total_num_tries: int,
                    created_date: datetime):
         self.master_wordle_df = self.master_wordle_df.append({'player_id': player_id,
-                                                'wordle_id': wordle_id,
-                                                'won_on_try_num': won_on_try_num,
-                                                'total_num_tries': total_num_tries,
-                                                'created_date': created_date},
+                                                              'wordle_id': wordle_id,
+                                                              'won_on_try_num': won_on_try_num,
+                                                              'total_num_tries': total_num_tries,
+                                                              'created_date': created_date},
                                                              ignore_index=True)
 
     def __make_sanitized_wordle_df__(self) -> pd.DataFrame:
         """
-        We can lazily prepare for a computation if needed here.
+        We can lazily prepare for a computation if needed here.... eventually, this should be optimized
+        to prepare each record individually instead of repeatedly in batches.
             - Prevents duplicate counts of shares.
                 - it would be better if we can just overwrite duplicates on add_wordle()
+            - Does handles funny biz from discord.py package that requires some timezone manipulation
         """
+        # clearing up duplicate entries
         wordle_df = self.master_wordle_df.drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
-        # discord.py doesn't work well with times... TODO: Look into not having to do this manipulation every time
+        # Time funny biz
         wordle_df.created_date = wordle_df.created_date.dt.tz_localize('UTC')
         wordle_df.created_date = wordle_df.created_date.dt.tz_convert("EST")
         wordle_df.created_date = wordle_df.created_date.dt.tz_localize(None)
-        #
         return wordle_df
 
     def compute_all_stats_df(self):  #
@@ -81,7 +85,7 @@ class WordleHistoryState:
         groupedby_players = wordle_df.groupby(wordle_df.player_id)
         all_stats_df["total_games"] = groupedby_players.size()
         all_stats_df["avg_won_on_attempt"] = groupedby_players.won_on_try_num.mean()
-        # there must be a simpler way for getting each person's WIN percentage
+        # there must be a simpler way for getting each person's WIN percentage, right?
         all_stats_df['win_percent'] = (wordle_df[wordle_df['won_on_try_num'].notna()].groupby(
             wordle_df.player_id).size() / wordle_df.groupby(wordle_df.player_id).size()) * 100
         all_stats_df['started_date'] = groupedby_players.created_date.min()
@@ -115,6 +119,7 @@ class WordleHistoryState:
     def compute_daily_df(self, top: int = None):
         """
         :returns:
+            wordle id
             avg attempts for wins
             avg of people who won
             pandas.DataFrame with columns: *sorted
@@ -131,12 +136,8 @@ class WordleHistoryState:
         percent_of_winners = df.won_on_try_num.notna().mean()
         df.won_on_try_num = pd.to_numeric(df.won_on_try_num)
         avg_turn_won = df.won_on_try_num.mean()
-        # # [band-aid] somehow, other wordles are slipping in, so let's filter those out here by only showing the most
-        # df = df[df.wordle_id == df.wordle_id.mode()[0]]
-        # #
         if top:
             df = df.nlargest(top, 'won_on_try_num')
-
         df = df.sort_values(["won_on_try_num", "created_date"], ascending=(True, True))
         df = df.reset_index(drop=True)
         return wid, avg_turn_won, percent_of_winners, df
