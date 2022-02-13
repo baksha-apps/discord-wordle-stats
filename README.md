@@ -13,7 +13,8 @@ Use this bot in your server to enrich your Wordle game play in Discord!
 ### `$leaderboard`
 Shows a ranking of the games played. 
 - Ranked in order of priority: Average attempt won on, win percentage, and when you first started playing.  
-<img width="292" alt="image" src="https://user-images.githubusercontent.com/15055008/153735810-4d2e5340-8e63-44f9-81cb-018997f30ffc.png">
+![image](https://user-images.githubusercontent.com/15055008/153767740-c9b8b945-3d84-4f8c-92d9-6154e2cb9db4.png)
+
 
 ### `$today`
 Shows a ranking of today's games played. 
