@@ -47,11 +47,11 @@ def __make_wordle_day_embed__(wid: int, avg_turn_won: float, percent_of_winners:
         created_date       datetime64[ns]
     """
     embed = discord.Embed(title=f"__**Wordle {wid}:**__", color=discord.Color.from_rgb(255, 255, 0))
-    last_day_for_wid = None # should probably be part of the input ui for SoC, but too lazy.
+    last_day_for_wid = None  # should probably be part of the input ui for SoC, but too lazy.
     # better practice would be to utilize ui models, but maybe that's too much for python
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
-                        value=f'> `{row.won_on_try_num}/6`\n'
+                        value=f'> `{row.won_on_try_num}/6`\n' +
                               f'> {humanize.naturaltime(row.created_date)}'
                         if row.created_date.date() == datetime.now().date()
                         else f"> {row.created_date.strftime('%l:%M%p')}",
