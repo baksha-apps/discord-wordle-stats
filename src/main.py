@@ -1,4 +1,3 @@
-import os, time
 from datetime import datetime
 from dotenv import dotenv_values
 import discord
@@ -12,7 +11,6 @@ config = dotenv_values(".env")
 WORDLE_DAILY_CHANNEL = 937390252576886845
 MAIN_CHANNEL = 731718737694162977
 
-# You can remove all usage of this variable if you do not want to test from an external channel.
 TEST_IN_TEST_SV = False  # Used when you want to pull from ^ instead of where the cmd is coming from.
 
 
@@ -137,47 +135,57 @@ class WordleClient(discord.Client):
             return
 
         if message.content == '$shutdown':
+            await message.channel.send('Goodbye!')
             exit(0)
 
         if message.content.startswith('$hello'):
             await message.channel.send('Hello!\n v0.0.3 \nBetter Wordle Bot says hello!')
             return
 
-        if message.content == '$restart-state':
+        if message.content == '$restart':
             await self.__channel_import__(message.channel.id)
             await message.channel.send('The wordle bot has restarted.')
 
         if message.content == '$leaderboard':
-            channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
+            channel_id = message.channel.id \
+                if not TEST_IN_TEST_SV \
+                else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            all_stats_df = self.channel_states \
+            all_stats_df = self\
+                .channel_states \
                 .get(channel_id) \
                 .compute_all_stats_df()
-            embed = __make_leaderboard_embed__(
-                "All-time Leaderboard", all_stats_df)
+            embed = __make_leaderboard_embed__("All-time Leaderboard",
+                                               all_stats_df)
             await message.channel.send(embed=embed)
             return
 
         if message.content == '$today':
-            channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
+            channel_id = message.channel.id \
+                if not TEST_IN_TEST_SV \
+                else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            wid, avg_turn_won, percent_of_winners, df = self.channel_states.get(
-                channel_id
-            ).compute_daily_df()
+            wid, avg_turn_won, percent_of_winners, df = self\
+                .channel_states\
+                .get(channel_id)\
+                .compute_daily_df()
             embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
             return
 
         if message.content.startswith('$wordle'):
-            channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
+            channel_id = message.channel.id \
+                if not TEST_IN_TEST_SV \
+                else WORDLE_DAILY_CHANNEL
             wordle_id = int(message.content.split(" ")[1])
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            wid, avg_turn_won, percent_of_winners, df = self.channel_states.get(
-                channel_id
-            ).compute_day_df_for_wordle(wordle_id)
+            wid, avg_turn_won, percent_of_winners, df = self\
+                .channel_states\
+                .get(channel_id)\
+                .compute_day_df_for_wordle(wordle_id)
             embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
             return
@@ -193,14 +201,7 @@ class WordleClient(discord.Client):
         # i have not put it as a start up step
         # because i have not found root cause
         if message.content.startswith('$time'):
-            if os.environ.get('TZ') == 'US/Eastern':
-                await message.channel.send(f"TZ is EST > {time.strftime('%l:%M%p %Z on %b %d, %Y')}")
-                return
-            before = time.strftime('%l:%M%p %Z on %b %d, %Y')
-            os.environ['TZ'] = 'US/Eastern'  # set new timezone
-            time.tzset()
-            after = time.strftime('%l:%M%p %Z on %b %d, %Y')
-            await message.channel.send(f"TZ: {before} -> {after}")  # before timezone change
+            await message.channel.send(f"**Time:** {datetime.now().strftime('%l:%M%p %Z on %b %d, %Y')}")
             return
 
         # Process these messages so we don't need to recalculate everything again.
