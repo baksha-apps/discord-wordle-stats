@@ -103,7 +103,6 @@ class WordleHistoryState:
         df.wordle_id = pd.to_numeric(df.wordle_id)
         df = df.loc[wordle_id == df.wordle_id]
         percent_of_winners = df.won_on_try_num.notna().mean()
-        # df.won_on_try_num = pd.to_numeric(df.won_on_try_num)
         avg_turn_won = df.won_on_try_num.mean()
         if top:
             df = df.nlargest(top, 'won_on_try_num')
@@ -132,6 +131,9 @@ class WordleHistoryState:
         percent_of_winners = df.won_on_try_num.notna().mean()
         df.won_on_try_num = pd.to_numeric(df.won_on_try_num)
         avg_turn_won = df.won_on_try_num.mean()
+        # [band-aid] somehow, other wordles are slipping in, so let's filter those out here by only showing the most
+        df = df[df.wordle_id == df.wordle_id.mode()[0]]
+        #
         if top:
             df = df.nlargest(top, 'won_on_try_num')
 
