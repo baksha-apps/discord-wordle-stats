@@ -1,4 +1,3 @@
-import os, time
 from datetime import datetime
 from dotenv import dotenv_values
 import discord
@@ -192,14 +191,7 @@ class WordleClient(discord.Client):
         # i have not put it as a start up step
         # because i have not found root cause
         if message.content.startswith('$time'):
-            if os.environ.get('TZ') == 'US/Eastern':
-                await message.channel.send(f"TZ is EST > {time.strftime('%l:%M%p %Z on %b %d, %Y')}")
-                return
-            before = time.strftime('%l:%M%p %Z on %b %d, %Y')
-            os.environ['TZ'] = 'US/Eastern'  # set new timezone
-            time.tzset()
-            after = time.strftime('%l:%M%p %Z on %b %d, %Y')
-            await message.channel.send(f"TZ: {before} -> {after}")  # before timezone change
+            await message.channel.send(f"**Time:** {datetime.now().strftime('%l:%M%p %Z on %b %d, %Y')}")
             return
 
         # Process these messages so we don't need to recalculate everything again.

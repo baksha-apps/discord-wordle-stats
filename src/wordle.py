@@ -1,11 +1,9 @@
 import re
 import numpy as np
 import pandas as pd
-from datetime import datetime, date, timezone
-
+from datetime import datetime, date
 # the words are hardcoded into the game and WID is really just index
 all_wordle_solutions = np.load("words.npy")
-
 
 # Helpers
 
@@ -37,7 +35,7 @@ def find_try_ratio(wordle_share_msg_header: str):
 class WordleHistoryState:
 
     def __init__(self):
-        self.wordle_df = pd.DataFrame(columns=[
+        self.master_wordle_df = pd.DataFrame(columns=[
             'player_id',  # str
             'wordle_id',  # int
             'won_on_try_num',  # optional<int>
@@ -45,24 +43,28 @@ class WordleHistoryState:
             'created_date'  # int
         ])
 
-    # TODO: Remove this and just prevent duplicates in add
-    def __prepare_for_computation__(self):
+    def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: int, total_num_tries: int,
+                   created_date: datetime):
+        self.master_wordle_df = self.master_wordle_df.append({'player_id': player_id,
+                                                'wordle_id': wordle_id,
+                                                'won_on_try_num': won_on_try_num,
+                                                'total_num_tries': total_num_tries,
+                                                'created_date': created_date},
+                                                             ignore_index=True)
+
+    def __make_sanitized_wordle_df__(self) -> pd.DataFrame:
         """
         We can lazily prepare for a computation if needed here.
             - Prevents duplicate counts of shares.
                 - it would be better if we can just overwrite duplicates on add_wordle()
         """
-        self.wordle_df.created_date = self.wordle_df.created_date.dt.replace(tzinfo=timezone.utc)
-        self.wordle_df = self.wordle_df.drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
-
-    def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: int, total_num_tries: int,
-                   created_date: datetime):
-        self.wordle_df = self.wordle_df.append({'player_id': player_id,
-                                                'wordle_id': wordle_id,
-                                                'won_on_try_num': won_on_try_num,
-                                                'total_num_tries': total_num_tries,
-                                                'created_date': created_date},
-                                               ignore_index=True)
+        wordle_df = self.master_wordle_df.drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
+        # discord.py doesn't work well with times... TODO: Look into not having to do this manipulation every time
+        wordle_df.created_date = wordle_df.created_date.dt.tz_localize('UTC')
+        wordle_df.created_date = wordle_df.created_date.dt.tz_convert("EST")
+        wordle_df.created_date = wordle_df.created_date.dt.tz_localize(None)
+        #
+        return wordle_df
 
     def compute_all_stats_df(self):  #
         """
@@ -74,8 +76,7 @@ class WordleHistoryState:
             win_percent                  float64
             started_date          datetime64[ns]
         """
-        self.__prepare_for_computation__()
-        wordle_df = self.wordle_df.copy()
+        wordle_df = self.__make_sanitized_wordle_df__()
         all_stats_df = pd.DataFrame()
         groupedby_players = wordle_df.groupby(wordle_df.player_id)
         all_stats_df["total_games"] = groupedby_players.size()
@@ -99,8 +100,7 @@ class WordleHistoryState:
                 total_num_tries            object
                 created_date       datetime64[ns]
         """
-        self.__prepare_for_computation__()
-        df = self.wordle_df.copy()
+        df = self.__make_sanitized_wordle_df__()
         df.wordle_id = pd.to_numeric(df.wordle_id)
         df = df.loc[wordle_id == df.wordle_id]
         percent_of_winners = df.won_on_try_num.notna().mean()
@@ -124,17 +124,16 @@ class WordleHistoryState:
                 total_num_tries            object
                 created_date       datetime64[ns]
         """
-        self.__prepare_for_computation__()
-        df = self.wordle_df.copy()
+        df = self.__make_sanitized_wordle_df__()
         df = df.loc[(date.today() == df['created_date'].dt.date)]
         df.wordle_id = pd.to_numeric(df.wordle_id)
         wid = df.wordle_id.value_counts().idxmax()
         percent_of_winners = df.won_on_try_num.notna().mean()
         df.won_on_try_num = pd.to_numeric(df.won_on_try_num)
         avg_turn_won = df.won_on_try_num.mean()
-        # [band-aid] somehow, other wordles are slipping in, so let's filter those out here by only showing the most
-        df = df[df.wordle_id == df.wordle_id.mode()[0]]
-        #
+        # # [band-aid] somehow, other wordles are slipping in, so let's filter those out here by only showing the most
+        # df = df[df.wordle_id == df.wordle_id.mode()[0]]
+        # #
         if top:
             df = df.nlargest(top, 'won_on_try_num')
 
