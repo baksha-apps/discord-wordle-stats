@@ -11,7 +11,7 @@ config = dotenv_values(".env")
 WORDLE_DAILY_CHANNEL = 937390252576886845
 MAIN_CHANNEL = 731718737694162977
 
-TEST_IN_TEST_SV = False  # Used when you want to pull from ^ instead of where the cmd is coming from.
+TEST_IN_TEST_SV = True  # Used when you want to pull from ^ instead of where the cmd is coming from.
 
 
 def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
@@ -27,11 +27,12 @@ def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
     embed = discord.Embed(title=f"__**{title}:**__", color=discord.Color.from_rgb(204, 0, 0))
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
-                        value=f'Total Games: `{row.total_games}`\n'
+                        value=
+                              f'Total Games: `{row.total_games}`\n'
+                              f'> Since: `{row.started_date.strftime("%m/%d/%Y").strip()}`\n'
                               f'> Averaging: `{row.avg_won_on_attempt}/6`\n'
-                              f'> Win %: `{row.win_percent}`\n'
-                              f'> Playing since: {row.started_date.strftime("%l:%M%p %Z on %b %d, %Y")}',
-                        inline=False)
+                              f'> Win %: `{row.win_percent}`\n',
+                        inline=True)
     return embed
 
 
@@ -152,7 +153,7 @@ class WordleClient(discord.Client):
                 else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            all_stats_df = self\
+            all_stats_df = self \
                 .channel_states \
                 .get(channel_id) \
                 .compute_all_stats_df()
@@ -167,9 +168,9 @@ class WordleClient(discord.Client):
                 else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            wid, avg_turn_won, percent_of_winners, df = self\
-                .channel_states\
-                .get(channel_id)\
+            wid, avg_turn_won, percent_of_winners, df = self \
+                .channel_states \
+                .get(channel_id) \
                 .compute_daily_df()
             embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
@@ -182,9 +183,9 @@ class WordleClient(discord.Client):
             wordle_id = int(message.content.split(" ")[1])
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            wid, avg_turn_won, percent_of_winners, df = self\
-                .channel_states\
-                .get(channel_id)\
+            wid, avg_turn_won, percent_of_winners, df = self \
+                .channel_states \
+                .get(channel_id) \
                 .compute_day_df_for_wordle(wordle_id)
             embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
