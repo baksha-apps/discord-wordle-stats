@@ -58,7 +58,7 @@ def __make_wordle_day_embed__(wid: int, avg_turn_won: float, percent_of_winners:
                         inline=True)
         last_day_for_wid = row.created_date
     embed.add_field(name=f'__**Overall Daily Statistics**__',
-                    value=f'<:gurg:730562333251862628>',
+                    value=f'<:thonking:726838160809787464>',
                     inline=False)
     embed.add_field(name=f"How many won?",
                     value=f"> `{percent_of_winners * 100}`%")
