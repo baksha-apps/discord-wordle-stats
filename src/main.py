@@ -29,7 +29,7 @@ def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
                         value=f'Total Games: `{row.total_games}`\n'
-                              f'> ||Averaging:|| `{row.avg_won_on_attempt}/6`\n'
+                              f'> Averaging: `{row.avg_won_on_attempt}/6`\n'
                               f'> Win %: `{row.win_percent}`\n'
                               f'> Playing since: {row.started_date.strftime("%l:%M%p %Z on %b %d, %Y")}',
                         inline=False)
@@ -139,7 +139,7 @@ class WordleClient(discord.Client):
             exit(0)
 
         if message.content.startswith('$hello'):
-            await message.channel.send('Hello!\n v0.0.2 \nBetter Wordle Bot says hello!')
+            await message.channel.send('Hello!\n v0.0.3 \nBetter Wordle Bot says hello!')
             return
 
         if message.content == '$restart-state':
@@ -159,11 +159,6 @@ class WordleClient(discord.Client):
             return
 
         if message.content == '$today':
-            # Temporarily here while debugging timezone issues
-            if os.environ.get('TZ') is not None:
-                await message.channel.send(f"[DEBUG] Timezone {os.environ.get('TZ')}.")
-                return
-            #
             channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
