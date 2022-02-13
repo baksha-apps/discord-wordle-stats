@@ -135,47 +135,57 @@ class WordleClient(discord.Client):
             return
 
         if message.content == '$shutdown':
+            await message.channel.send('Goodbye!')
             exit(0)
 
         if message.content.startswith('$hello'):
             await message.channel.send('Hello!\n v0.0.3 \nBetter Wordle Bot says hello!')
             return
 
-        if message.content == '$restart-state':
+        if message.content == '$restart':
             await self.__channel_import__(message.channel.id)
             await message.channel.send('The wordle bot has restarted.')
 
         if message.content == '$leaderboard':
-            channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
+            channel_id = message.channel.id \
+                if not TEST_IN_TEST_SV \
+                else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            all_stats_df = self.channel_states \
+            all_stats_df = self\
+                .channel_states \
                 .get(channel_id) \
                 .compute_all_stats_df()
-            embed = __make_leaderboard_embed__(
-                "All-time Leaderboard", all_stats_df)
+            embed = __make_leaderboard_embed__("All-time Leaderboard",
+                                               all_stats_df)
             await message.channel.send(embed=embed)
             return
 
         if message.content == '$today':
-            channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
+            channel_id = message.channel.id \
+                if not TEST_IN_TEST_SV \
+                else WORDLE_DAILY_CHANNEL
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            wid, avg_turn_won, percent_of_winners, df = self.channel_states.get(
-                channel_id
-            ).compute_daily_df()
+            wid, avg_turn_won, percent_of_winners, df = self\
+                .channel_states\
+                .get(channel_id)\
+                .compute_daily_df()
             embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
             return
 
         if message.content.startswith('$wordle'):
-            channel_id = message.channel.id if not TEST_IN_TEST_SV else WORDLE_DAILY_CHANNEL
+            channel_id = message.channel.id \
+                if not TEST_IN_TEST_SV \
+                else WORDLE_DAILY_CHANNEL
             wordle_id = int(message.content.split(" ")[1])
             if channel_id not in self.channel_states:
                 await self.__channel_import__(channel_id)
-            wid, avg_turn_won, percent_of_winners, df = self.channel_states.get(
-                channel_id
-            ).compute_day_df_for_wordle(wordle_id)
+            wid, avg_turn_won, percent_of_winners, df = self\
+                .channel_states\
+                .get(channel_id)\
+                .compute_day_df_for_wordle(wordle_id)
             embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
             return
