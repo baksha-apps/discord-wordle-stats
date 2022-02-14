@@ -126,7 +126,7 @@ class WordleClient(discord.Client):
         header = message_content.split('\n')[0]
         wordle_id = find_wordle_id(header)
         won_on_try, max_tries = find_try_ratio(header)
-        self.channel_states[channel_id].add_wordle(player_id=message.author.display_name,
+        self.channel_states[channel_id].add_wordle(player_id=str(message.author),
                                                    wordle_id=wordle_id,
                                                    won_on_try_num=won_on_try,
                                                    total_num_tries=max_tries,
