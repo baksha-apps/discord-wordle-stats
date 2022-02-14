@@ -4,7 +4,7 @@ import discord
 import pandas
 import humanize
 from wordle import is_wordle_share, find_try_ratio, WordleHistoryState, find_wordle_id, find_solution
-
+import os, time
 config = dotenv_values(".env")
 
 # Custom VARS for custom situational logic. Does not affect using this bot in other servers.
@@ -134,6 +134,8 @@ class WordleClient(discord.Client):
 
     async def on_ready(self):
         print('We have logged in as {0.user}'.format(self))
+        os.environ['TZ'] = 'US/Eastern'  # set new timezone
+        time.tzset()
 
     async def on_message(self, message):
         if message.author.bot:
@@ -204,7 +206,14 @@ class WordleClient(discord.Client):
             return
 
         if message.content.startswith('$time'):
-            await message.channel.send(f"**Time:** {datetime.now().strftime('%l:%M%p %Z on %b %d, %Y')}")
+            if os.environ.get('TZ') == 'US/Eastern':
+                await message.channel.send(f"TZ is EST > {time.strftime('%l:%M%p %Z on %b %d, %Y')}")
+                return
+            before = time.strftime('%l:%M%p %Z on %b %d, %Y')
+            os.environ['TZ'] = 'US/Eastern'  # set new timezone
+            time.tzset()
+            after = time.strftime('%l:%M%p %Z on %b %d, %Y')
+            await message.channel.send(f"TZ: {before} -> {after}")  # before timezone change
             return
 
         # Process these messages so we don't need to recalculate everything again.
