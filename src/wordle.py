@@ -65,9 +65,10 @@ class WordleHistoryState:
         # clearing up duplicate entries
         wordle_df = self.master_wordle_df.drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
         # Time funny biz
-        wordle_df.created_date = wordle_df.created_date.dt.tz_localize('UTC')
-        wordle_df.created_date = wordle_df.created_date.dt.tz_convert("EST")
-        wordle_df.created_date = wordle_df.created_date.dt.tz_localize(None)
+        if not wordle_df.created_date.empty:
+            wordle_df.created_date = wordle_df.created_date.dt.tz_localize('UTC')
+            wordle_df.created_date = wordle_df.created_date.dt.tz_convert("EST")
+            wordle_df.created_date = wordle_df.created_date.dt.tz_localize(None)
         return wordle_df
 
     def compute_all_stats_df(self):  #
