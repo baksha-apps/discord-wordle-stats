@@ -142,12 +142,14 @@ class WordleClient(discord.Client):
             pre_play_player_rank = pre_add_ranks.index(str(message.author))
             post_add_ranks = list(self.channel_states[channel_id].compute_all_stats_df().player_id)
             post_play_player_rank = post_add_ranks.index(str(message.author))
+
+            difference = abs(pre_play_player_rank - post_play_player_rank)
             if post_play_player_rank < pre_play_player_rank:
-                await message.channel.send(f"📈 Look at you... 🆙 {str(message.author)} 🆙")
+                await message.channel.send(f"📈 Look at you... 🆙 {str(message.author)} 🆙 +{difference} leaderboard rank")
             elif post_play_player_rank > pre_play_player_rank:
-                await message.channel.send(f"Oh no... 🔻 {str(message.author)} 🔻")
-            else:
-                await message.channel.send(f"No ranking change... {str(message.author)}, {pre_play_player_rank} > {post_play_player_rank} ")
+                await message.channel.send(f"Oh no... 🔻 {str(message.author)} 🔻 -{difference} leaderboard rank")
+            # else:
+                # await message.channel.send(f"No ranking change... {str(message.author)}, {pre_play_player_rank} > {post_play_player_rank} ")
         ###########################
 
     async def on_ready(self):
