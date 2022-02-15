@@ -102,19 +102,19 @@ class WordleClient(discord.Client):
             for message in messages:
                 await self.__add_to_state__(message, WORDLE_DAILY_CHANNEL)
 
-    async def __add_to_state__(self, message: discord.Message, overrided_leaderboard_id: int = None):
+    async def __add_to_state__(self, message: discord.Message, override_leaderboard_id: int = None, should_send_rank = False):
         """
         Process message from anywhere and add it to the state of the bot.
 
         :param discord.Message message: 
             - Message being sent.
             - Adds the Wordle Game to the the channel's state.
-        :param str overrided_leaderboard_id: 
+        :param str override_leaderboard_id: 
             Instead of adding this message to the original channel's leader-board, you may override it to another board.
             This functionality is built-in for consolidating leader-boards from multiple channels into just one.
             (if needed)
         """
-        channel_id = overrided_leaderboard_id if overrided_leaderboard_id else message.channel.id
+        channel_id = override_leaderboard_id if override_leaderboard_id else message.channel.id
         message_content = message.content.strip()
         if message.author.bot is True or not is_wordle_share(message_content):
             return
@@ -126,11 +126,31 @@ class WordleClient(discord.Client):
         header = message_content.split('\n')[0]
         wordle_id = find_wordle_id(header)
         won_on_try, max_tries = find_try_ratio(header)
+        ############### cheesy, very unoptimized way check to see if we went up/down in rank
+        cached_pre_play_df = self.channel_states[channel_id].compute_all_stats_df()
+        ################################
+
         self.channel_states[channel_id].add_wordle(player_id=str(message.author),
                                                    wordle_id=wordle_id,
                                                    won_on_try_num=won_on_try,
                                                    total_num_tries=max_tries,
                                                    created_date=message.created_at)
+
+        ############### cheesy, very unoptimized way check to see if we went up/down in rank
+        if should_send_rank:
+            pre_add_ranks = list(cached_pre_play_df.player_id)
+            pre_play_player_rank = pre_add_ranks.index(str(message.author))
+            post_add_ranks = list(self.channel_states[channel_id].compute_all_stats_df().player_id)
+            post_play_player_rank = post_add_ranks.index(str(message.author))
+
+            difference = abs(pre_play_player_rank - post_play_player_rank)
+            if post_play_player_rank < pre_play_player_rank:
+                await message.channel.send(f"📈 Look at you... 🆙 {str(message.author)} 🆙 +{difference} leaderboard rank")
+            elif post_play_player_rank > pre_play_player_rank:
+                await message.channel.send(f"Oh no... 🔻 {str(message.author)} 🔻 -{difference} leaderboard rank")
+            # else:
+                # await message.channel.send(f"No ranking change... {str(message.author)}, {pre_play_player_rank} > {post_play_player_rank} ")
+        ###########################
 
     async def on_ready(self):
         print('We have logged in as {0.user}'.format(self))
@@ -217,7 +237,7 @@ class WordleClient(discord.Client):
             return
 
         # Process these messages so we don't need to recalculate everything again.
-        await self.__add_to_state__(message)
+        await self.__add_to_state__(message, should_send_rank=True)
 
 
 client = WordleClient()
