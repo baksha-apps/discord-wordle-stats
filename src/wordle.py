@@ -90,7 +90,7 @@ class WordleHistoryState:
         all_stats_df['win_percent'] = (wordle_df[wordle_df['won_on_try_num'].notna()].groupby(
             wordle_df.player_id).size() / wordle_df.groupby(wordle_df.player_id).size()) * 100
         all_stats_df['started_date'] = groupedby_players.created_date.min()
-        return all_stats_df.sort_values(["avg_won_on_attempt", "win_percent", "started_date"],
+        return all_stats_df.sort_values(["avg_won_on_attempt", "total_games", "win_percent", "started_date"],
                                         ascending=(True, False, True)).round(2).reset_index()
 
     def compute_day_df_for_wordle(self, wordle_id: int, top: int = None):
