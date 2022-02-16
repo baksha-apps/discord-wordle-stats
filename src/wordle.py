@@ -91,7 +91,7 @@ class WordleHistoryState:
             wordle_df.player_id).size() / wordle_df.groupby(wordle_df.player_id).size()) * 100
         all_stats_df['started_date'] = groupedby_players.created_date.min()
         return all_stats_df.sort_values(["avg_won_on_attempt", "total_games", "win_percent", "started_date"],
-                                        ascending=(True, False, True)).round(2).reset_index()
+                                        ascending=(True, False, False, True)).round(2).reset_index()
 
     def compute_day_df_for_wordle(self, wordle_id: int, top: int = None):
         """
