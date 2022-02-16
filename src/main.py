@@ -5,6 +5,7 @@ import pandas
 import humanize
 from wordle import is_wordle_share, find_try_ratio, WordleHistoryState, find_wordle_id, find_solution
 import os, time
+
 config = dotenv_values(".env")
 
 # Custom VARS for custom situational logic. Does not affect using this bot in other servers.
@@ -102,7 +103,9 @@ class WordleClient(discord.Client):
             for message in messages:
                 await self.__add_to_state__(message, WORDLE_DAILY_CHANNEL)
 
-    async def __add_to_state__(self, message: discord.Message, override_leaderboard_id: int = None, should_send_rank = False):
+    async def __add_to_state__(self, message: discord.Message,
+                               override_leaderboard_id: int = None,
+                               should_send_rank_update=False):
         """
         Process message from anywhere and add it to the state of the bot.
 
@@ -137,7 +140,7 @@ class WordleClient(discord.Client):
                                                    created_date=message.created_at)
 
         ############### cheesy, very unoptimized way check to see if we went up/down in rank
-        if should_send_rank:
+        if should_send_rank_update:
             pre_add_ranks = list(cached_pre_play_df.player_id)
             pre_play_player_rank = pre_add_ranks.index(str(message.author))
             post_add_ranks = list(self.channel_states[channel_id].compute_all_stats_df().player_id)
@@ -149,7 +152,7 @@ class WordleClient(discord.Client):
             elif post_play_player_rank > pre_play_player_rank:
                 await message.channel.send(f"Oh no... 🔻 {str(message.author)} 🔻 -{difference} leaderboard rank")
             # else:
-                # await message.channel.send(f"No ranking change... {str(message.author)}, {pre_play_player_rank} > {post_play_player_rank} ")
+            # await message.channel.send(f"No ranking change... {str(message.author)}, {pre_play_player_rank} > {post_play_player_rank} ")
         ###########################
 
     async def on_ready(self):
@@ -237,7 +240,7 @@ class WordleClient(discord.Client):
             return
 
         # Process these messages so we don't need to recalculate everything again.
-        await self.__add_to_state__(message, should_send_rank=True)
+        await self.__add_to_state__(message, should_send_rank_update=True)
 
 
 client = WordleClient()
