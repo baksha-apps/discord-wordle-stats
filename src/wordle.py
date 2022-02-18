@@ -5,6 +5,9 @@ from datetime import datetime, date
 
 # the words are hardcoded into the game and WID is really just index
 all_wordle_solutions = np.load("words.npy")
+# nyt has been removing words...
+nyt_words_removed = {"agora", "pupal", "lynch", "fibre", "slave", "wench", "pussy"}
+all_wordle_solutions = [word for word in all_wordle_solutions if word not in nyt_words_removed]
 
 
 # Helpers
