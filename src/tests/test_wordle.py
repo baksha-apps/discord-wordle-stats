@@ -3,7 +3,7 @@ from src.wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleHi
 from datetime import datetime, timedelta
 import pytest
 
-MASTER_DF_FIXTURE = pd.read_csv('./tests/res/stubbed_messages.csv', parse_dates=['created_date'])
+MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
 
 
 def test_is_wordle_share_true():
