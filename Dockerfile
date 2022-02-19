@@ -7,5 +7,4 @@ COPY entrypoint.sh /entrypoint.sh
 RUN pip install -r requirements.txt --upgrade
 RUN ["chmod", "+x", "/entrypoint.sh"]
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
-CMD [ "export PYTHONPATH=$(pwd)" ]
 ENTRYPOINT ["/entrypoint.sh"]
