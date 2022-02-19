@@ -1,5 +1,5 @@
 FROM python:3.8
-WORKDIR /app
+# WORKDIR /app
 COPY . .
 RUN ls
 # Copies your code file from your action repository to the filesystem path `/` of the container
