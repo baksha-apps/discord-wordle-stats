@@ -34,5 +34,5 @@ jobs:
           ls
       - name: Test with pytest
         run: |
-          export PYTHONPATH=$(pwd)
+          export PYTHONPATH=$(pwd)/src
           python -m pytest
