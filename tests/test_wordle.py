@@ -1,8 +1,8 @@
 import pandas as pd
-from wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleHistoryState
+from app.wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleHistoryState
 from datetime import datetime, timedelta
 
-MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
+MASTER_DF_FIXTURE = pd.read_csv('./tests/res/stubbed_messages.csv', parse_dates=['created_date'])
 
 
 def test_is_wordle_share_true():

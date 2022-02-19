@@ -2,7 +2,7 @@ import pandas
 import discord
 import humanize
 from datetime import datetime
-from wordle import find_solution
+from app.wordle import find_solution
 
 
 def make_leaderboard_embed(df: pandas.DataFrame):
