@@ -1,7 +1,6 @@
 import pandas as pd
-from src.wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleHistoryState
+from wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleHistoryState
 from datetime import datetime, timedelta
-import pytest
 
 MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
 

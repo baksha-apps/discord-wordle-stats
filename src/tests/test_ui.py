@@ -1,7 +1,7 @@
 import pandas as pd
-from src.wordle import WordleHistoryState
+from wordle import WordleHistoryState
 from datetime import datetime, timedelta
-import src.ui as ui
+import ui
 
 MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
 
