@@ -1,3 +1,3 @@
 #!/bin/sh -l
 pwd
-python src/main.py
+python app/main.py
