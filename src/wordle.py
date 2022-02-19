@@ -1,16 +1,21 @@
 import re
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 from datetime import datetime, date
 
 # the words are hardcoded into the game and WID is really just index
-all_wordle_solutions = np.load("words.npy")
+ALL_WORDLE_SOLUTIONS = np.load("words.npy")
+# nyt has been removing words... we can remove them for parity
+nyt_words_removed = {"agora", "pupal", "lynch", "fibre", "slave", "wench", "pussy"}
+ALL_WORDLE_SOLUTIONS = [word for word in ALL_WORDLE_SOLUTIONS if word not in nyt_words_removed]
 
 
 # Helpers
 
 def find_solution(wid: int) -> str:
-    return all_wordle_solutions[wid]
+    return ALL_WORDLE_SOLUTIONS[wid]
 
 
 def find_wordle_id(wordle_share_msg_header: str):
@@ -37,6 +42,7 @@ def find_try_ratio(wordle_share_msg_header: str):
 class WordleHistoryState:
 
     def __init__(self):
+        self.__rankings_before_last_add__ = None
         self.master_wordle_df = pd.DataFrame(columns=[
             'player_id',  # str
             'wordle_id',  # int
@@ -45,14 +51,36 @@ class WordleHistoryState:
             'created_date'  # int
         ])
 
-    def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: int, total_num_tries: int,
+    def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: Optional[int], total_num_tries: int,
                    created_date: datetime):
+        self.__rankings_before_last_add__ = self.current_leaderboard_ids_ranked()
         self.master_wordle_df = self.master_wordle_df.append({'player_id': player_id,
                                                               'wordle_id': wordle_id,
                                                               'won_on_try_num': won_on_try_num,
                                                               'total_num_tries': total_num_tries,
                                                               'created_date': created_date},
                                                              ignore_index=True)
+
+    def current_leaderboard_ids_ranked(self):
+        """
+        :returns: list<str> ranking all the players
+        """
+        df = self.compute_all_stats_df()
+        return list(df.player_id) if not df.empty else []
+
+    def find_latest_rank_change(self, player_id):
+        '''
+        Used to check if a players most recent game changed their standing in the leaderboard.
+
+        :returns: <int> difference of rank after last game was played for a given player.
+        if the player hasn't played before,
+            None
+        '''
+        if player_id not in self.__rankings_before_last_add__:
+            return None
+        pre_play_player_rank = self.__rankings_before_last_add__.index(str(player_id))
+        post_play_player_rank = self.current_leaderboard_ids_ranked().index(str(player_id))
+        return pre_play_player_rank - post_play_player_rank
 
     def __make_sanitized_wordle_df__(self) -> pd.DataFrame:
         """
@@ -90,8 +118,8 @@ class WordleHistoryState:
         all_stats_df['win_percent'] = (wordle_df[wordle_df['won_on_try_num'].notna()].groupby(
             wordle_df.player_id).size() / wordle_df.groupby(wordle_df.player_id).size()) * 100
         all_stats_df['started_date'] = groupedby_players.created_date.min()
-        return all_stats_df.sort_values(["avg_won_on_attempt", "win_percent", "started_date"],
-                                        ascending=(True, False, True)).round(2).reset_index()
+        return all_stats_df.sort_values(["avg_won_on_attempt", "total_games", "win_percent", "started_date"],
+                                        ascending=(True, False, False, True)).round(2).reset_index()
 
     def compute_day_df_for_wordle(self, wordle_id: int, top: int = None):
         """
