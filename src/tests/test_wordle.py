@@ -1,36 +1,54 @@
 import pandas as pd
-from wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleHistoryState
+from wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleState
 from datetime import datetime, timedelta
+import textwrap
 
 MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
 
 
 def test_is_wordle_share_true():
-    valid_wordle = '''Wordle 215 4/6
+    valid_wordle = '''\
+        Wordle 215 4/6
+    
+        🟩⬛⬛⬛⬛
+        🟩🟩⬛⬛⬛
+        🟩🟩🟨🟩⬛
+        🟩🟩🟩🟩🟩'''
 
-🟩⬛⬛⬛⬛
-🟩🟩⬛⬛⬛
-🟩🟩🟨🟩⬛
-🟩🟩🟩🟩🟩
-'''
+    assert is_wordle_share(textwrap.dedent(valid_wordle))
 
-    assert is_wordle_share(valid_wordle) == True
+
+def test_is_wordle_share_true_with_ast():
+    valid_wordle = '''\
+        Wordle 215 4/6*
+
+        🟩⬛⬛⬛⬛
+        🟩🟩⬛⬛⬛
+        🟩🟩🟨🟩⬛
+        🟩🟩🟩🟩🟩'''
+
+    assert is_wordle_share(textwrap.dedent(valid_wordle))
 
 
 def test_is_wordle_share_false():
-    invalid_wordle = '''Nondle 215 4/6
+    invalid_wordle = '''\
+        Nordle 215 4/6
+    
+        🟩⬛⬛⬛⬛
+        🟩🟩⬛⬛⬛
+        🟩🟩🟨🟩⬛
+        🟩🟩🟩🟩🟩'''
 
-🟩⬛⬛⬛⬛
-🟩🟩⬛⬛⬛
-🟩🟩🟨🟩⬛
-🟩🟩🟩🟩🟩
-'''
-
-    assert is_wordle_share(invalid_wordle) == False
+    assert not is_wordle_share(textwrap.dedent(invalid_wordle))
 
 
 def test_find_try_ratio_4of6():
-    header = '''Nondle 215 4/6'''
+    header = '''Wordle 215 4/6'''
+    assert find_try_ratio(header) == (4, 6)
+
+
+def test_find_try_ratio_4of6_with_atsrk():
+    header = '''Wordle 215 4/6*'''
     assert find_try_ratio(header) == (4, 6)
 
 
@@ -46,7 +64,7 @@ def test_find_wordle_id():
 
 def test_add_games_to_state():
     # given
-    sut = WordleHistoryState()
+    sut = WordleState()
 
     # when
     sut.add_wordle("id1", 1, 1, 6, datetime.now())
@@ -58,20 +76,21 @@ def test_add_games_to_state():
 
 def test_make_sanitized_df():
     # given
-    sut = WordleHistoryState()
+    sut = WordleState()
 
     # when
     sut.add_wordle("id1", 1, 1, 6, datetime.now())
     sut.add_wordle("id1", 1, None, 6, datetime.now() + timedelta(minutes=2))
     sut.add_wordle("id2", 1, 1, 6, datetime.now())
     sut.add_wordle("id2", 2, None, 6, datetime.now() + timedelta(minutes=2))
+
     # then
     assert len(sut.__make_sanitized_wordle_df__()) == 3
 
 
 def test_compute_daily():
     # given
-    sut = WordleHistoryState()
+    sut = WordleState()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     sut.add_wordle("travie", 1000, 1, 5, datetime.now())
     sut.add_wordle("travis", 1000, None, 5, datetime.now())
@@ -94,7 +113,7 @@ def test_compute_daily():
 
 def test_compute_all():
     # given
-    sut = WordleHistoryState()
+    sut = WordleState()
     sut.master_wordle_df = MASTER_DF_FIXTURE
 
     # when
@@ -114,7 +133,7 @@ def test_compute_all():
 
 def test_current_leaderboard_ids_ranked():
     # given
-    sut = WordleHistoryState()
+    sut = WordleState()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     # setups up the internal cache rankings_before_last_add, since too lazy to not use fixture
     sut.add_wordle("BEST_PLAYER", 123, 1, 5, datetime.now())
@@ -137,7 +156,7 @@ def test_current_leaderboard_ids_ranked():
 
 def test_last_add_changed_rank():
     # given
-    sut = WordleHistoryState()
+    sut = WordleState()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     # setups up the internal cache rankings_before_last_add, since too lazy to not use fixture
     sut.add_wordle("SAMPLE_PLAYER", 123, 3, 6, datetime.now())
@@ -151,7 +170,7 @@ def test_last_add_changed_rank():
 
 def test_last_add_changed_rank_on_first_game():
     # given
-    sut = WordleHistoryState()
+    sut = WordleState()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     # setups up the internal cache rankings_before_last_add, since too lazy to not use fixture
     sut.add_wordle("SAMPLE_PLAYER", 123, 3, 6, datetime.now())

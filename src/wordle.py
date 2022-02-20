@@ -23,6 +23,7 @@ def find_wordle_id(wordle_share_msg_header: str):
 
 
 def is_wordle_share(msg: str):
+    msg = msg.replace('*', '')
     return re.match(r'Wordle \d\d\d ./\d\n\n[⬛⬜🟩🟨]{5}', msg) is not None
 
 
@@ -30,6 +31,7 @@ def find_try_ratio(wordle_share_msg_header: str):
     """
     returns: tuple (attempt, of_tries)
     """
+    wordle_share_msg_header = wordle_share_msg_header.replace('*', '')
     header = wordle_share_msg_header
     won_on_try = int(header[-3]) if header[-3].isdigit() else None
     max_attempts = int(header[-1])
@@ -39,7 +41,7 @@ def find_try_ratio(wordle_share_msg_header: str):
 # State
 
 
-class WordleHistoryState:
+class WordleState:
 
     def __init__(self):
         self.__rankings_before_last_add__ = None
