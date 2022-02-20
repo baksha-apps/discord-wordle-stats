@@ -91,7 +91,7 @@ class WordleClient(discord.Client):
             if difference:
                 positive_reactions = ["AYOOOO", "YURRRRR", "LETS GOOOOO", "LOOK @YOU", "WATCH THIS"]
                 negative_reactions = ["oh no", "sadly", "ain't no way", "sheesh...", "its not the best...",
-                                      "english not my best"]
+                                      "english not ur best"]
                 positive_emojis = ["📈", "🆙"]
                 negative_emojis = ["🔻"]
                 reaction_for_change = random.choice(positive_reactions if difference > 0 else negative_reactions)
