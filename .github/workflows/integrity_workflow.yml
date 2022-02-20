@@ -12,7 +12,7 @@ on:
   
 jobs:
   run-tests:
-    runs-on: [self-hosted, Linux, tp-ud1]
+    runs-on: [self-hosted, Linux]
     permissions:
       contents: read
       packages: write
