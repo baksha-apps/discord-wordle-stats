@@ -6,7 +6,7 @@ import discord
 from dotenv import dotenv_values
 
 from ui import make_leaderboard_embed, make_wordle_day_embed
-from wordle import is_wordle_share, find_try_ratio, WordleState, find_wordle_id
+from wordle import is_wordle_share, find_try_ratio, WordleStatistics, find_wordle_id
 
 config = dotenv_values(".env")
 
@@ -36,7 +36,7 @@ class WordleClient(discord.Client):
         There is additional custom logic for my personal server if the conditions are met.
         """
         channel = self.get_channel(channel_id)
-        self.channel_states[channel_id] = WordleState()
+        self.channel_states[channel_id] = WordleStatistics()
         messages = await channel.history(limit=import_amount).flatten()
         for message in messages:
             if message.author.bot is True:

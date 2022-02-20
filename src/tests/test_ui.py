@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 import ui
-from wordle import WordleState
+from wordle import WordleStatistics
 
 MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
 
@@ -12,7 +12,7 @@ MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_date
 
 def test_make_leaderboard_embed():
     # given
-    sut = WordleState()
+    sut = WordleStatistics()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     sut.add_wordle("travie", 1000, 1, 5, datetime.now())
     sut.add_wordle("travis", 1000, None, 5, datetime.now())
@@ -26,7 +26,7 @@ def test_make_leaderboard_embed():
 
 def test_make_wordle_day_embed():
     # given
-    sut = WordleState()
+    sut = WordleStatistics()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     sut.add_wordle("travie", 1000, 1, 5, datetime.now())
     sut.add_wordle("travis", 1000, None, 5, datetime.now())

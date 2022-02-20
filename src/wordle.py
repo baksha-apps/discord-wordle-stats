@@ -41,7 +41,7 @@ def find_try_ratio(wordle_share_msg_header: str):
 # State
 
 
-class WordleState:
+class WordleStatistics:
 
     def __init__(self):
         self.__rankings_before_last_add__ = None

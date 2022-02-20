@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-from wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleState
+from wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleStatistics
 
 MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
 
@@ -66,7 +66,7 @@ def test_find_wordle_id():
 
 def test_add_games_to_state():
     # given
-    sut = WordleState()
+    sut = WordleStatistics()
 
     # when
     sut.add_wordle("id1", 1, 1, 6, datetime.now())
@@ -78,7 +78,7 @@ def test_add_games_to_state():
 
 def test_make_sanitized_df():
     # given
-    sut = WordleState()
+    sut = WordleStatistics()
 
     # when
     sut.add_wordle("id1", 1, 1, 6, datetime.now())
@@ -91,7 +91,7 @@ def test_make_sanitized_df():
 
 def test_compute_daily():
     # given
-    sut = WordleState()
+    sut = WordleStatistics()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     sut.add_wordle("travie", 1000, 1, 5, datetime.now())
     sut.add_wordle("travis", 1000, None, 5, datetime.now())
@@ -114,7 +114,7 @@ def test_compute_daily():
 
 def test_compute_all():
     # given
-    sut = WordleState()
+    sut = WordleStatistics()
     sut.master_wordle_df = MASTER_DF_FIXTURE
 
     # when
@@ -134,7 +134,7 @@ def test_compute_all():
 
 def test_current_leaderboard_ids_ranked():
     # given
-    sut = WordleState()
+    sut = WordleStatistics()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     # setups up the internal cache rankings_before_last_add, since too lazy to not use fixture
     sut.add_wordle("BEST_PLAYER", 123, 1, 5, datetime.now())
@@ -157,7 +157,7 @@ def test_current_leaderboard_ids_ranked():
 
 def test_last_add_changed_rank():
     # given
-    sut = WordleState()
+    sut = WordleStatistics()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     # setups up the internal cache rankings_before_last_add, since too lazy to not use fixture
     sut.add_wordle("SAMPLE_PLAYER", 123, 3, 6, datetime.now())
@@ -171,7 +171,7 @@ def test_last_add_changed_rank():
 
 def test_last_add_changed_rank_on_first_game():
     # given
-    sut = WordleState()
+    sut = WordleStatistics()
     sut.master_wordle_df = MASTER_DF_FIXTURE
     # setups up the internal cache rankings_before_last_add, since too lazy to not use fixture
     sut.add_wordle("SAMPLE_PLAYER", 123, 3, 6, datetime.now())
