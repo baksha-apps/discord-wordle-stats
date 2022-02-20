@@ -1,9 +1,12 @@
-import pandas as pd
-from wordle import WordleState
 from datetime import datetime, timedelta
+
+import pandas as pd
+
 import ui
+from wordle import WordleState
 
 MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
+
 
 # These just verify that they do not throw an error when creating
 

@@ -1,9 +1,9 @@
 import re
+from datetime import datetime, date
 from typing import Optional
 
 import numpy as np
 import pandas as pd
-from datetime import datetime, date
 
 # the words are hardcoded into the game and WID is really just index
 ALL_WORDLE_SOLUTIONS = np.load("words.npy")
