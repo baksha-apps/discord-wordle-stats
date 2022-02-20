@@ -40,3 +40,6 @@ Shows a ranking of a played Wordle.
    - Deploys to the GCP/GCR/GCE container project specified in the Repository secrets.    
   - Self Hosted
    - Deploys to the same machine running the GitHub action instead! Still using Docker.
+
+## Credit
+Thank you [@shawnfelix](https://github.com/shawnfelix) for starting it off.
