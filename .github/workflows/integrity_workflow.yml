@@ -5,7 +5,7 @@ name: Integrity
 
 on:
   push:
-    branches: [ main, develop, patching ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
