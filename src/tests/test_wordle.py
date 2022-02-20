@@ -83,7 +83,6 @@ def test_make_sanitized_df():
     sut.add_wordle("id1", 1, None, 6, datetime.now() + timedelta(minutes=2))
     sut.add_wordle("id2", 1, 1, 6, datetime.now())
     sut.add_wordle("id2", 2, None, 6, datetime.now() + timedelta(minutes=2))
-
     # then
     assert len(sut.__make_sanitized_wordle_df__()) == 3
 
