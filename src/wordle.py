@@ -91,7 +91,9 @@ class WordleHistoryState:
             - Does handles funny biz from discord.py package that requires some timezone manipulation
         """
         # clearing up duplicate entries
-        wordle_df = self.master_wordle_df.drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
+        wordle_df = self.master_wordle_df\
+            .sort_values(["created_date"])\
+            .drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
         # Time funny biz
         if not wordle_df.created_date.empty:
             wordle_df.created_date = wordle_df.created_date.dt.tz_localize('UTC')
