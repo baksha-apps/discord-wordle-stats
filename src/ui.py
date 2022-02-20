@@ -1,7 +1,9 @@
-import pandas
+from datetime import datetime
+
 import discord
 import humanize
-from datetime import datetime
+import pandas
+
 from wordle import find_solution
 
 

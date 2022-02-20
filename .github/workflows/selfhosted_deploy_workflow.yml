@@ -8,9 +8,9 @@ on:
     branches: [ develop ] # for now
   workflow_dispatch:
 
-  
+
 jobs:
-  deploy: 
+  deploy:
     runs-on: [self-hosted, Linux]
     # Add "id-token" with the intended permissions.
     permissions:

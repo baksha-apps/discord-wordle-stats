@@ -5,27 +5,23 @@ import time
 import discord
 from dotenv import dotenv_values
 
-from wordle import is_wordle_share, find_try_ratio, WordleHistoryState, find_wordle_id
 from ui import make_leaderboard_embed, make_wordle_day_embed
+from wordle import is_wordle_share, find_try_ratio, WordleStatistics, find_wordle_id
 
 config = dotenv_values(".env")
+
+# Timezone config injection
+# set new timezone - defaults to EST, but configurable
+os.environ['TZ'] = config.get('TZ_CONFIG') if config.get('TZ_CONFIG') else 'US/Eastern'
+time.tzset()
+
+# TESTING PURPOSES: Allows you to specify a channel id to get input data from,
+# but only responds to incoming command channel. OPTIONAL.
+REDIRECT_CHANNEL = int(config.get('REDIRECTED_INPUT_CHANNEL')) if config.get('REDIRECTED_INPUT_CHANNEL') else None
 
 # Custom VARS for custom situational logic. Does not affect using this bot in other servers.
 WORDLE_DAILY_CHANNEL = 937390252576886845
 MAIN_CHANNEL = 731718737694162977
-
-# TESTING PURPOSES: Allows you to specify a channel id to get input data from,
-# but only responds to incoming command channel. OPTIONAL.
-REDIRECT_CHANNEL = None
-if config.get('REDIRECTED_INPUT_CHANNEL'):
-    REDIRECT_CHANNEL = int(config.get('REDIRECTED_INPUT_CHANNEL'))
-
-# Timezone config injection
-TZ_CONFIG = 'US/Eastern'  # set new timezone - defaults to EST, but configurable
-if config.get('TZ_CONFIG'):
-    TZ_CONFIG = config.get('TZ_CONFIG')
-os.environ['TZ'] = TZ_CONFIG
-time.tzset()
 
 
 class WordleClient(discord.Client):
@@ -34,14 +30,14 @@ class WordleClient(discord.Client):
         super().__init__(loop=loop, **options)
         self.channel_states = dict()  # <channel_id str: WordleHistoryState>
 
-    async def __channel_import__(self, channel_id: int):
+    async def __channel_import__(self, channel_id: int, import_amount: int = 3000):
         """
         Imports last 1k messages into the bot state.
         There is additional custom logic for my personal server if the conditions are met.
         """
         channel = self.get_channel(channel_id)
-        messages = await channel.history(limit=1000).flatten()
-        self.channel_states[channel_id] = WordleHistoryState()
+        self.channel_states[channel_id] = WordleStatistics()
+        messages = await channel.history(limit=import_amount).flatten()
         for message in messages:
             if message.author.bot is True:
                 continue
@@ -52,7 +48,7 @@ class WordleClient(discord.Client):
         # so we want to port it over to the wordle channel board instead.
         if channel_id == WORDLE_DAILY_CHANNEL:
             channel = self.get_channel(MAIN_CHANNEL)
-            messages = await channel.history(limit=3000).flatten()
+            messages = await channel.history(limit=import_amount).flatten()
             for message in messages:
                 await self.__add_to_state__(message, WORDLE_DAILY_CHANNEL)
 
@@ -63,10 +59,10 @@ class WordleClient(discord.Client):
         """
         Process message from anywhere and add it to the state of the bot.
 
-        :param discord.Message message: 
+        :param discord.Message message:
             - Message being sent.
             - Adds the Wordle Game to the the channel's state.
-        :param str override_leaderboard_id: 
+        :param str override_leaderboard_id:
             Instead of adding this message to the original channel's leader-board, you may override it to another board.
             This functionality is built-in for consolidating leader-boards from multiple channels into just one.
             (if needed)
@@ -95,15 +91,17 @@ class WordleClient(discord.Client):
             if difference:
                 positive_reactions = ["AYOOOO", "YURRRRR", "LETS GOOOOO", "LOOK @YOU", "WATCH THIS"]
                 negative_reactions = ["oh no", "sadly", "ain't no way", "sheesh...", "its not the best...",
-                                      "english not my best"]
+                                      "english not ur best"]
+                positive_emojis = ["📈", "🆙", "<:dhands:741347089568759829>", "<:thonking:600922118972112896>"]
+                negative_emojis = ["🔻", "<:damn:800218841547931700>", "<:yikes:939003738197205042>"]
+                reaction_for_change = random.choice(positive_reactions if difference > 0 else negative_reactions)
+                emoji_for_change = random.choice(positive_emojis if difference > 0 else negative_emojis)
 
-                reactions_for_change = positive_reactions if difference > 0 else negative_reactions
-                emoji_for_change = "📈" if difference > 0 else "🔻"
-                starting_message = random.choice(reactions_for_change)
-
-                await message.channel.send(f"{emoji_for_change} {starting_message} {emoji_for_change}\n"
-                                           f"{message.author.mention} {'+' if difference >= 1 else ''}{difference}"
-                                           f" leaderboard rank")
+                await message.channel.send(
+                    f"{emoji_for_change} {reaction_for_change} {emoji_for_change}\n"
+                    f"{'+' if difference > 0 else ''}{difference} leaderboard rank\n"
+                    f"{message.author.mention}"
+                )
 
     async def on_ready(self):
         print('We have logged in as {0.user}'.format(self))
