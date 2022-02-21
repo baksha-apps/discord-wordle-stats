@@ -18,16 +18,16 @@ def find_solution(wid: int) -> str:
     return ALL_WORDLE_SOLUTIONS[wid]
 
 
-def find_wordle_id(wordle_share_msg_header: str):
+def find_wordle_id(wordle_share_msg_header: str) -> int:
     return int(str(wordle_share_msg_header[7:10]))
 
 
-def is_wordle_share(msg: str):
+def is_wordle_share(msg: str) -> bool:
     msg = msg.replace('*', '')
     return re.match(r'Wordle \d\d\d ./\d\n\n[⬛⬜🟩🟨]{5}', msg) is not None
 
 
-def find_try_ratio(wordle_share_msg_header: str):
+def find_try_ratio(wordle_share_msg_header: str) -> (Optional[int], int):
     """
     returns: tuple (attempt, of_tries)
     """
