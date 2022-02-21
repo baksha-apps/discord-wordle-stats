@@ -48,7 +48,6 @@ Shows a ranking of a played Wordle.
       Adjust Documentation: 5: Me
 ```
 
-
 ## Github Workflows
 - Intergrity Workflow
   - Runs Tests
