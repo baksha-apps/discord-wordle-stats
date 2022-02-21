@@ -87,6 +87,34 @@ class WordleClient(discord.Client):
                                                    created_date=message.created_at)
 
         if is_repliable:
+
+            compliments = [
+                "nice one",
+                "that's what we like to see",
+                "alright mr dictionary",
+                "travis thinks you are cheating",
+                "well done"
+            ]
+            soft_insults = [
+                "you've done better",
+                "with a score like that, just know that participation matters",
+                "that's tough"
+            ]
+            hard_insults = [
+                "i too do not have eyes",
+                "honestly just start cheating",
+                "use `$today` to see the answer since you clearly did not",
+                "https://www.dictionary.com/"
+            ]
+
+            if not won_on_try:
+                await message.channel.send(f"{message.author.mention} {random.choice(hard_insults)}")
+            elif won_on_try <= 3:
+                await message.channel.send(f"{message.author.mention} {random.choice(compliments)}")
+            else:
+                await message.channel.send(f"{message.author.mention} {random.choice(soft_insults)}")
+
+
             difference = self.channel_states[channel_id].find_latest_rank_change(str(message.author))
             if difference:
                 positive_reactions = ["AYOOOO", "YURRRRR", "LETS GOOOOO", "LOOK @YOU", "WATCH THIS"]
