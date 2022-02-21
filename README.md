@@ -30,6 +30,24 @@ Shows a ranking of a played Wordle.
 <img width="403" alt="image" src="https://user-images.githubusercontent.com/15055008/153735776-def40efa-041c-47a1-b604-197ce5023f23.png">
 
 
+## Contributing 
+```mermaid
+  journey
+    title Contributing
+    section Feature
+      Branch feature/short-desc: 5: You
+      Pull Request into patching: 5: You
+      Review Pull Request: 4: Me, You
+    section Patching
+      Pull Request into develop: 5: Me
+      Review: 5: Me
+      Merge: 5: Me
+    section Public Release
+      Pull request into main: 5: Me
+      Review: 5: Me
+      Adjust Documentation: 5: Me
+```
+
 
 ## Github Workflows
 - Intergrity Workflow
