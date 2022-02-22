@@ -92,16 +92,21 @@ class WordleClient(discord.Client):
                 "nice one",
                 "that's what we like to see",
                 "alright mr dictionary",
-                "travis thinks you are cheating",
-                "well done"
+                "well done",
+                "round of applause for this guy",
+                "congratulations"
             ]
             soft_insults = [
                 "you've done better",
-                "with a score like that, just know that participation matters",
-                "that's tough"
+                "are you new here",
+                "mediocrity",
+                "ok",
+                f"{won_on_try} attempts.... ok..",
             ]
             hard_insults = [
+                "why did you post this here?",
                 "i too do not have eyes",
+                "with a score like that, just know that participation matters",
                 "honestly just start cheating",
                 "use `$today` to see the answer since you clearly did not",
                 "https://www.dictionary.com/"
@@ -109,7 +114,7 @@ class WordleClient(discord.Client):
 
             if not won_on_try:
                 await message.channel.send(f"{message.author.mention} {random.choice(hard_insults)}")
-            elif won_on_try <= 3:
+            elif won_on_try <= 4:
                 await message.channel.send(f"{message.author.mention} {random.choice(compliments)}")
             else:
                 await message.channel.send(f"{message.author.mention} {random.choice(soft_insults)}")
