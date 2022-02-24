@@ -114,7 +114,7 @@ class WordleClient(discord.Client):
 
             if not won_on_try:
                 await message.channel.send(f"{message.author.mention} {random.choice(hard_insults)}")
-            elif won_on_try <= 4:
+            elif won_on_try <= 5:
                 print(f"{message.author.mention} {random.choice(compliments)}")
             else:
                 await message.channel.send(f"{message.author.mention} {random.choice(soft_insults)}")
