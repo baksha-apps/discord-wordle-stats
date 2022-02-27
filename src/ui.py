@@ -1,4 +1,5 @@
 from datetime import datetime
+import io
 
 import discord
 import humanize
@@ -61,3 +62,16 @@ def make_wordle_day_embed(wid: int, avg_turn_won: float, percent_of_winners: flo
                     value=f"> ||{find_solution(wid=wid).upper()}||")
     embed.set_footer(text=f"{last_day_for_wid.strftime('%B %d, %Y')}")
     return embed
+
+
+def make_image_embed(title: str, data_stream: io.BytesIO) -> (discord.Embed, discord.File):
+    """
+    :returns:
+        discord.Embed with image inside
+        discord.File with image as file
+    """
+    FILE_NAME = "image.png"
+    image_file = discord.File(data_stream, filename=FILE_NAME)
+    embed = discord.Embed(title=f"__**{title}:**__", color=discord.Color.from_rgb(255, 255, 0))
+    embed.set_image(url=f"attachment://{FILE_NAME}")
+    return embed, image_file

@@ -181,3 +181,17 @@ def test_last_add_changed_rank_on_first_game():
 
     # then
     assert sut.find_latest_rank_change('WORST_PLAYER') is None
+
+
+def test_make_activity_stream():
+    # given
+    sut = WordleStatistics()
+    sut.master_wordle_df = MASTER_DF_FIXTURE
+    # setups up the internal cache rankings_before_last_add, since too lazy to not use fixture
+    sut.add_wordle("SAMPLE_PLAYER", 123, 3, 6, datetime.now())
+
+    # when
+    stream = sut.draw_activity()
+
+    # then
+    assert stream is not None
