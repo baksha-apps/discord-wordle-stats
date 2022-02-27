@@ -1,6 +1,8 @@
+import io
 from datetime import datetime, timedelta
 
 import pandas as pd
+import matplotlib.pyplot as plt
 
 import ui
 from wordle import WordleStatistics
@@ -36,3 +38,18 @@ def test_make_wordle_day_embed():
     wordle_id, avg_turn_won, percent_of_winners, df = sut.compute_day_df_for_wordle(228)
     # then
     _ = ui.make_wordle_day_embed(wordle_id, avg_turn_won, percent_of_winners, df)
+
+def test_image_embed():
+    data_stream = io.BytesIO()
+
+    data_stream = io.BytesIO()
+    # plt.figure(figsize=(1,1))
+    ax = MASTER_DF_FIXTURE.created_date.dt.date.value_counts().plot(x='Date', y='Plays')
+    # Save content into the data stream
+    plt.savefig(data_stream, format='png', bbox_inches="tight", dpi=80)
+    plt.close()
+    ## Create file
+    # Reset point back to beginning of stream
+    data_stream.seek(0)
+    _ = ui.make_image_embed("Test Title", data_stream)
+

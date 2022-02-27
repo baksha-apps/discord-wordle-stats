@@ -5,7 +5,7 @@ import time
 import discord
 from dotenv import dotenv_values
 
-from ui import make_leaderboard_embed, make_wordle_day_embed
+from ui import make_leaderboard_embed, make_wordle_day_embed, make_image_embed
 from wordle import is_wordle_share, find_try_ratio, WordleStatistics, find_wordle_id
 
 config = dotenv_values(".env")
@@ -142,7 +142,14 @@ class WordleClient(discord.Client):
     async def on_message(self, message):
         if message.author.bot:
             return
+        ### import if needed
+        channel_id = message.channel.id \
+            if not REDIRECT_CHANNEL \
+            else REDIRECT_CHANNEL
 
+        if channel_id not in self.channel_states:
+            await self.__channel_import__(channel_id)
+        #####
         if message.content == '$shutdown':
             await message.channel.send('Goodbye!')
             exit(0)
@@ -157,11 +164,6 @@ class WordleClient(discord.Client):
             return
 
         if message.content == '$leaderboard':
-            channel_id = message.channel.id \
-                if not REDIRECT_CHANNEL \
-                else REDIRECT_CHANNEL
-            if channel_id not in self.channel_states:
-                await self.__channel_import__(channel_id)
             all_stats_df = self \
                 .channel_states \
                 .get(channel_id) \
@@ -171,11 +173,6 @@ class WordleClient(discord.Client):
             return
 
         if message.content == '$today':
-            channel_id = message.channel.id \
-                if not REDIRECT_CHANNEL \
-                else REDIRECT_CHANNEL
-            if channel_id not in self.channel_states:
-                await self.__channel_import__(channel_id)
             wid, avg_turn_won, percent_of_winners, df = self \
                 .channel_states \
                 .get(channel_id) \
@@ -185,12 +182,7 @@ class WordleClient(discord.Client):
             return
 
         if message.content.startswith('$wordle'):
-            channel_id = message.channel.id \
-                if not REDIRECT_CHANNEL \
-                else REDIRECT_CHANNEL
             wordle_id = int(message.content.split(" ")[1])
-            if channel_id not in self.channel_states:
-                await self.__channel_import__(channel_id)
             wid, avg_turn_won, percent_of_winners, df = self \
                 .channel_states \
                 .get(channel_id) \
@@ -208,6 +200,12 @@ class WordleClient(discord.Client):
 
         if message.content.startswith('$time'):
             await message.channel.send(f"**Time:** {time.strftime('%l:%M%p %Z on %b %d, %Y')}")
+            return
+
+        if message.content.startswith('$activity'):
+            activity_stream = self.channel_states[channel_id].draw_activity()
+            embed, image = make_image_embed("Activity", activity_stream)
+            await message.channel.send(embed=embed, file=image)
             return
 
         # Process these messages so we don't need to recalculate everything again.

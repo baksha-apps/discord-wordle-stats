@@ -1,10 +1,10 @@
 import re
 from datetime import datetime, date
 from typing import Optional
+import io
 
 import numpy as np
 import pandas as pd
-
 # the words are hardcoded into the game and WID is really just index
 ALL_WORDLE_SOLUTIONS = np.load("words.npy")
 # nyt has been removing words... we can remove them for parity
@@ -36,7 +36,6 @@ def find_try_ratio(wordle_share_msg_header: str) -> (Optional[int], int):
     won_on_try = int(header[-3]) if header[-3].isdigit() else None
     max_attempts = int(header[-1])
     return won_on_try, max_attempts
-
 
 # State
 
@@ -174,3 +173,23 @@ class WordleStatistics:
         df = df.sort_values(["won_on_try_num", "created_date"], ascending=(True, True))
         df = df.reset_index(drop=True)
         return wid, avg_turn_won, percent_of_winners, df
+
+    def draw_activity(self) -> io.BytesIO:
+        '''
+        :return: io.BytesIO of the image drawn
+        '''
+        import matplotlib.pyplot as plt
+        plt.style.use("seaborn")
+
+        df = self.__make_sanitized_wordle_df__()
+        data = df.created_date.dt.date.value_counts()
+        ax = data.plot(x='Regional indicator', y='Ladder score')
+        # fig, ax = plt.subplots()
+        # fig.autofmt_xdate()
+        plt.xticks(rotation=90)
+
+        data_stream = io.BytesIO()
+        plt.savefig(data_stream, format='png', bbox_inches="tight", dpi=80)
+        plt.close()
+        data_stream.seek(0)
+        return data_stream
