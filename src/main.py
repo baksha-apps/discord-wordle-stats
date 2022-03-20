@@ -12,7 +12,8 @@ config = dotenv_values(".env")
 
 # Timezone config injection
 # set new timezone - defaults to EST, but configurable
-os.environ['TZ'] = config.get('TZ_CONFIG') if config.get('TZ_CONFIG') else 'US/Eastern'
+TIME_ZONE = config.get('TZ_CONFIG') if config.get('TZ_CONFIG') else 'US/Eastern'
+os.environ['TZ'] = TIME_ZONE
 time.tzset()
 
 # TESTING PURPOSES: Allows you to specify a channel id to get input data from,
@@ -36,7 +37,7 @@ class WordleClient(discord.Client):
         There is additional custom logic for my personal server if the conditions are met.
         """
         channel = self.get_channel(channel_id)
-        self.channel_states[channel_id] = WordleStatistics()
+        self.channel_states[channel_id] = WordleStatistics(timezone=TIME_ZONE)
         messages = await channel.history(limit=import_amount).flatten()
         for message in messages:
             if message.author.bot is True:
@@ -104,11 +105,11 @@ class WordleClient(discord.Client):
                 f"{won_on_try} attempts.... ok..",
             ]
             hard_insults = [
-                "why did you post this here?",
+                # "why did you post this here?",
                 "i too do not have eyes",
-                "with a score like that, just know that participation matters",
-                "honestly just start cheating",
-                "use `$today` to see the answer since you clearly did not",
+                # "with a score like that, just know that participation matters",
+                # "honestly just start cheating",
+                "use `$today` to see the answer since you ain't catch it",
                 "https://www.dictionary.com/"
             ]
 
@@ -119,13 +120,12 @@ class WordleClient(discord.Client):
             else:
                 await message.channel.send(f"{message.author.mention} {random.choice(soft_insults)}")
 
-
             difference = self.channel_states[channel_id].find_latest_rank_change(str(message.author))
             if difference:
                 positive_reactions = ["AYOOOO", "YURRRRR", "LETS GOOOOO", "LOOK @YOU", "WATCH THIS"]
                 negative_reactions = ["oh no", "sadly", "ain't no way", "sheesh...", "its not the best...",
                                       "english not ur best"]
-                positive_emojis = ["📈", "🆙", "<:dhands:741347089568759829>", "<:thonking:600922118972112896>"]
+                positive_emojis = ["📈", "🆙", "<:dhands:741347089568759829>"]
                 negative_emojis = ["🔻", "<:damn:800218841547931700>", "<:yikes:939003738197205042>"]
                 reaction_for_change = random.choice(positive_reactions if difference > 0 else negative_reactions)
                 emoji_for_change = random.choice(positive_emojis if difference > 0 else negative_emojis)
