@@ -42,7 +42,7 @@ def find_try_ratio(wordle_share_msg_header: str) -> (Optional[int], int):
 
 class WordleStatistics:
 
-    def __init__(self):
+    def __init__(self, timezone: str = 'US/Eastern'):
         self.__rankings_before_last_add__ = None
         self.master_wordle_df = pd.DataFrame(columns=[
             'player_id',  # str
@@ -51,6 +51,7 @@ class WordleStatistics:
             'total_num_tries',  # int
             'created_date'  # int
         ])
+        self.timezone = timezone
 
     def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: Optional[int], total_num_tries: int,
                    created_date: datetime):
@@ -98,7 +99,7 @@ class WordleStatistics:
         # Time funny biz
         if not wordle_df.created_date.empty:
             wordle_df.created_date = wordle_df.created_date.dt.tz_localize('UTC')
-            wordle_df.created_date = wordle_df.created_date.dt.tz_convert("US/Eastern")
+            wordle_df.created_date = wordle_df.created_date.dt.tz_convert(self.timezone)
             wordle_df.created_date = wordle_df.created_date.dt.tz_localize(None)
         return wordle_df
 
