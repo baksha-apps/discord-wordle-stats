@@ -98,7 +98,7 @@ class WordleStatistics:
         # Time funny biz
         if not wordle_df.created_date.empty:
             wordle_df.created_date = wordle_df.created_date.dt.tz_localize('UTC')
-            wordle_df.created_date = wordle_df.created_date.dt.tz_convert("EST")
+            wordle_df.created_date = wordle_df.created_date.dt.tz_convert("EDT")
             wordle_df.created_date = wordle_df.created_date.dt.tz_localize(None)
         return wordle_df
 
