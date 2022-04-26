@@ -8,7 +8,7 @@ import pandas
 from wordle import find_solution
 
 
-def make_leaderboard_embed(df: pandas.DataFrame):
+def make_leaderboard_embed(df: pandas.DataFrame, title: str = "__**All-time Leaderboard:**__"):
     """
     :param: df: pandas.DataFrame
         Requires DataFrame with the following dtypes
@@ -18,7 +18,7 @@ def make_leaderboard_embed(df: pandas.DataFrame):
             win_percent                  float64
             started_date          datetime64[ns]
     """
-    embed = discord.Embed(title=f"__**All-time Leaderboard:**__", color=discord.Color.from_rgb(204, 0, 0))
+    embed = discord.Embed(title=title, color=discord.Color.from_rgb(204, 0, 0))
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
                         value=

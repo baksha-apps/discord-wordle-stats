@@ -45,7 +45,8 @@ def find_try_ratio(wordle_share_msg_header: str) -> (Optional[int], int):
 class WordleStatistics:
 
     def __init__(self, timezone: str = 'US/Eastern'):
-        self.__rankings_before_last_add__ = None
+        self.__all_time_rankings_before_last_add__ = None
+        self.__monthly_rankings_before_last_add__ = None
         self.master_wordle_df = pd.DataFrame(columns=[
             'player_id',  # str
             'wordle_id',  # int
@@ -57,7 +58,8 @@ class WordleStatistics:
 
     def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: Optional[int], total_num_tries: int,
                    created_date: datetime):
-        self.__rankings_before_last_add__ = self.current_leaderboard_ids_ranked()
+        self.__all_time_rankings_before_last_add__ = self.current_all_time_leaderboard_ids_ranked()
+        self.__monthly_rankings_before_last_add__ = self.current_monthly_leaderboard_ids_ranked()
         self.master_wordle_df = self.master_wordle_df.append({'player_id': player_id,
                                                               'wordle_id': wordle_id,
                                                               'won_on_try_num': won_on_try_num,
@@ -65,14 +67,21 @@ class WordleStatistics:
                                                               'created_date': created_date},
                                                              ignore_index=True)
 
-    def current_leaderboard_ids_ranked(self):
+    def current_all_time_leaderboard_ids_ranked(self):
         """
         :returns: list<str> ranking all the players
         """
         df = self.compute_all_stats_df()
         return list(df.player_id) if not df.empty else []
 
-    def find_latest_rank_change(self, player_id):
+    def current_monthly_leaderboard_ids_ranked(self):
+        """
+        :returns: list<str> ranking all the players
+        """
+        df = self.compute_monthly_stats_df()
+        return list(df.player_id) if not df.empty else []
+
+    def find_latest_rank_change(self, player_id, monthly=False):
         '''
         Used to check if a players most recent game changed their standing in the leaderboard.
 
@@ -80,10 +89,17 @@ class WordleStatistics:
         if the player hasn't played before,
             None
         '''
-        if player_id not in self.__rankings_before_last_add__:
+        if monthly:
+            if player_id not in self.__monthly_rankings_before_last_add__:
+                return None
+            pre_play_player_rank = self.__monthly_rankings_before_last_add__.index(str(player_id))
+            post_play_player_rank = self.current_monthly_leaderboard_ids_ranked().index(str(player_id))
+            return pre_play_player_rank - post_play_player_rank
+
+        if player_id not in self.__all_time_rankings_before_last_add__:
             return None
-        pre_play_player_rank = self.__rankings_before_last_add__.index(str(player_id))
-        post_play_player_rank = self.current_leaderboard_ids_ranked().index(str(player_id))
+        pre_play_player_rank = self.__all_time_rankings_before_last_add__.index(str(player_id))
+        post_play_player_rank = self.current_all_time_leaderboard_ids_ranked().index(str(player_id))
         return pre_play_player_rank - post_play_player_rank
 
     def __make_sanitized_wordle_df__(self) -> pd.DataFrame:

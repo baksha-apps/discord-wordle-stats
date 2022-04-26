@@ -140,7 +140,7 @@ def test_current_leaderboard_ids_ranked():
     sut.add_wordle("BEST_PLAYER", 123, 1, 5, datetime.now())
 
     # when
-    rankings = sut.current_leaderboard_ids_ranked()
+    rankings = sut.current_all_time_leaderboard_ids_ranked()
 
     # then
     assert len(rankings) == len(set(sut.master_wordle_df.player_id))
