@@ -120,7 +120,7 @@ class WordleClient(discord.Client):
             else:
                 await message.channel.send(f"{message.author.mention} {random.choice(soft_insults)}")
 
-            def send_rank_change(monthly=False):
+            async def send_rank_change(monthly=False):
                 difference = self.channel_states[channel_id].find_latest_rank_change(str(message.author),
                                                                                      monthly=monthly)
                 if difference:
@@ -138,8 +138,8 @@ class WordleClient(discord.Client):
                         f"{'+' if difference > 0 else ''}{difference} {leaderboard} rank\n"
                         f"{message.author.mention}"
                     )
-            send_rank_change()
-            send_rank_change(monthly=True)
+            await send_rank_change()
+            await send_rank_change(monthly=True)
 
     async def on_ready(self):
         print('We have logged in as {0.user}'.format(self))
