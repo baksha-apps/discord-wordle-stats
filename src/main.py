@@ -163,12 +163,21 @@ class WordleClient(discord.Client):
             await message.channel.send('The wordle bot has reset the state.')
             return
 
-        if message.content == '$leaderboard':
+        if message.content == '$all-time-leaderboard':
             all_stats_df = self \
                 .channel_states \
                 .get(channel_id) \
                 .compute_all_stats_df()
             embed = make_leaderboard_embed(all_stats_df)
+            await message.channel.send(embed=embed)
+            return
+
+        if message.content == '$leaderboard':
+            monthly_stats_df = self \
+                .channel_states \
+                .get(channel_id) \
+                .compute_monthly_stats_df()
+            embed = make_leaderboard_embed(monthly_stats_df)
             await message.channel.send(embed=embed)
             return
 
@@ -194,7 +203,8 @@ class WordleClient(discord.Client):
         if message.content.startswith('$help'):
             await message.channel.send(
                 'If this is an emergency, please dial 911. \n'
-                'Supported commands: `$today`,`$leaderboard`, `$wordle <id>`, `$hello`, `$help`'
+                'Supported commands: `$today`,`$leaderboard`, `$all-time-leaderboard`, '
+                '`$wordle <id>`, `$hello`, `$help`'
             )
             return
 
