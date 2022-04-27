@@ -1,10 +1,11 @@
+import io
 import re
 from datetime import datetime, date
 from typing import Optional
-import io
 
 import numpy as np
 import pandas as pd
+
 # the words are hardcoded into the game and WID is really just index
 ALL_WORDLE_SOLUTIONS = np.load("words.npy")
 # nyt has been removing words... we can remove them for parity
@@ -37,13 +38,15 @@ def find_try_ratio(wordle_share_msg_header: str) -> (Optional[int], int):
     max_attempts = int(header[-1])
     return won_on_try, max_attempts
 
+
 # State
 
 
 class WordleStatistics:
 
     def __init__(self, timezone: str = 'US/Eastern'):
-        self.__rankings_before_last_add__ = None
+        self.__all_time_rankings_before_last_add__ = None
+        self.__monthly_rankings_before_last_add__ = None
         self.master_wordle_df = pd.DataFrame(columns=[
             'player_id',  # str
             'wordle_id',  # int
@@ -55,7 +58,8 @@ class WordleStatistics:
 
     def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: Optional[int], total_num_tries: int,
                    created_date: datetime):
-        self.__rankings_before_last_add__ = self.current_leaderboard_ids_ranked()
+        self.__all_time_rankings_before_last_add__ = self.current_all_time_leaderboard_ids_ranked()
+        self.__monthly_rankings_before_last_add__ = self.current_monthly_leaderboard_ids_ranked()
         self.master_wordle_df = self.master_wordle_df.append({'player_id': player_id,
                                                               'wordle_id': wordle_id,
                                                               'won_on_try_num': won_on_try_num,
@@ -63,14 +67,21 @@ class WordleStatistics:
                                                               'created_date': created_date},
                                                              ignore_index=True)
 
-    def current_leaderboard_ids_ranked(self):
+    def current_all_time_leaderboard_ids_ranked(self):
         """
         :returns: list<str> ranking all the players
         """
         df = self.compute_all_stats_df()
         return list(df.player_id) if not df.empty else []
 
-    def find_latest_rank_change(self, player_id):
+    def current_monthly_leaderboard_ids_ranked(self):
+        """
+        :returns: list<str> ranking all the players
+        """
+        df = self.compute_monthly_stats_df()
+        return list(df.player_id) if not df.empty else []
+
+    def find_latest_rank_change(self, player_id, monthly=False):
         '''
         Used to check if a players most recent game changed their standing in the leaderboard.
 
@@ -78,10 +89,17 @@ class WordleStatistics:
         if the player hasn't played before,
             None
         '''
-        if player_id not in self.__rankings_before_last_add__:
+        if monthly:
+            if player_id not in self.__monthly_rankings_before_last_add__:
+                return None
+            pre_play_player_rank = self.__monthly_rankings_before_last_add__.index(str(player_id))
+            post_play_player_rank = self.current_monthly_leaderboard_ids_ranked().index(str(player_id))
+            return pre_play_player_rank - post_play_player_rank
+
+        if player_id not in self.__all_time_rankings_before_last_add__:
             return None
-        pre_play_player_rank = self.__rankings_before_last_add__.index(str(player_id))
-        post_play_player_rank = self.current_leaderboard_ids_ranked().index(str(player_id))
+        pre_play_player_rank = self.__all_time_rankings_before_last_add__.index(str(player_id))
+        post_play_player_rank = self.current_all_time_leaderboard_ids_ranked().index(str(player_id))
         return pre_play_player_rank - post_play_player_rank
 
     def __make_sanitized_wordle_df__(self) -> pd.DataFrame:
@@ -93,8 +111,8 @@ class WordleStatistics:
             - Does handles funny biz from discord.py package that requires some timezone manipulation
         """
         # clearing up duplicate entries
-        wordle_df = self.master_wordle_df\
-            .sort_values(["created_date"])\
+        wordle_df = self.master_wordle_df \
+            .sort_values(["created_date"]) \
             .drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
         # Time funny biz
         if not wordle_df.created_date.empty:
@@ -114,6 +132,36 @@ class WordleStatistics:
             started_date          datetime64[ns]
         """
         wordle_df = self.__make_sanitized_wordle_df__()
+        all_stats_df = pd.DataFrame()
+        groupedby_players = wordle_df.groupby(wordle_df.player_id)
+        all_stats_df["total_games"] = groupedby_players.size()
+        all_stats_df["avg_won_on_attempt"] = groupedby_players.won_on_try_num.mean()
+        # there must be a simpler way for getting each person's WIN percentage, right?
+        all_stats_df['win_percent'] = (wordle_df[wordle_df['won_on_try_num'].notna()].groupby(
+            wordle_df.player_id).size() / wordle_df.groupby(wordle_df.player_id).size()) * 100
+        all_stats_df['started_date'] = groupedby_players.created_date.min()
+        return all_stats_df.sort_values(["avg_won_on_attempt", "total_games", "win_percent", "started_date"],
+                                        ascending=(True, False, False, True)).round(2).reset_index()
+
+    def compute_monthly_stats_df(self):  #
+        """
+        :returns: pandas.DataFrame with columns: *sorted
+            index                          int64
+            player_id                        str
+            total_games                    int64
+            avg_won_on_attempt           float64
+            win_percent                  float64
+            started_date          datetime64[ns]
+        """
+        wordle_df = self.__make_sanitized_wordle_df__()
+
+        # Filter for month
+        if not wordle_df.created_date.empty:
+            start_filter_date = wordle_df['created_date'].max().date().replace(day=1)
+            start_filter_timestamp = pd.Timestamp(start_filter_date)
+            monthly_filter_mask = wordle_df['created_date'] >= start_filter_timestamp
+            wordle_df = wordle_df[monthly_filter_mask]
+
         all_stats_df = pd.DataFrame()
         groupedby_players = wordle_df.groupby(wordle_df.player_id)
         all_stats_df["total_games"] = groupedby_players.size()
