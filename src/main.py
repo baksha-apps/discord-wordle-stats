@@ -221,7 +221,7 @@ class WordleClient(discord.Client):
 
         if message.content.startswith('$activity'):
             activity_stream = self.channel_states[channel_id].draw_activity()
-            embed, image = make_image_embed("Activity", activity_stream)
+            embed, image = make_image_embed("Players playing", activity_stream)
             await message.channel.send(embed=embed, file=image)
             return
 

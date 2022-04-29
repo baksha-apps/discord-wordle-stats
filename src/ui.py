@@ -13,6 +13,7 @@ from enum import Enum
 class Color(Enum):
     RED = discord.Color.from_rgb(204, 0, 0)
     BLUE = discord.Color.from_rgb(70, 130, 180)
+    ORANGE = discord.Color.from_rgb(255, 111, 0)
 
 
 def make_leaderboard_embed(df: pandas.DataFrame,
@@ -73,7 +74,9 @@ def make_wordle_day_embed(wid: int, avg_turn_won: float, percent_of_winners: flo
     return embed
 
 
-def make_image_embed(title: str, data_stream: io.BytesIO) -> (discord.Embed, discord.File):
+def make_image_embed(title: str,
+                     data_stream: io.BytesIO,
+                     color: Color = Color.ORANGE) -> (discord.Embed, discord.File):
     """
     :returns:
         discord.Embed with image inside
@@ -81,6 +84,6 @@ def make_image_embed(title: str, data_stream: io.BytesIO) -> (discord.Embed, dis
     """
     FILE_NAME = "image.png"
     image_file = discord.File(data_stream, filename=FILE_NAME)
-    embed = discord.Embed(title=f"__**{title}:**__", color=discord.Color.from_rgb(255, 255, 0))
+    embed = discord.Embed(title=f"__**{title}:**__", color=color.value)
     embed.set_image(url=f"attachment://{FILE_NAME}")
     return embed, image_file
