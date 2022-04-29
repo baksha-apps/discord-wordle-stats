@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 import io
 
@@ -14,6 +15,13 @@ class Color(Enum):
     RED = discord.Color.from_rgb(204, 0, 0)
     BLUE = discord.Color.from_rgb(70, 130, 180)
     ORANGE = discord.Color.from_rgb(255, 111, 0)
+    TURQ = discord.Color.from_rgb(95, 232, 182)
+
+
+@dataclass(frozen=True)
+class Command:
+    name: str
+    description: str
 
 
 def make_leaderboard_embed(df: pandas.DataFrame,
@@ -71,6 +79,21 @@ def make_wordle_day_embed(wid: int, avg_turn_won: float, percent_of_winners: flo
     embed.add_field(name=f"Solution:",
                     value=f"> ||{find_solution(wid=wid).upper()}||")
     embed.set_footer(text=f"{last_day_for_wid.strftime('%B %d, %Y')}")
+    return embed
+
+
+def make_help_embed(commands: [Command], color: Color = Color.TURQ):
+    """
+    :param: df pandas.DataFrame
+        commands:               [str]
+
+    """
+    embed = discord.Embed(title=f":sos: __**Wordle Bot**__ :sos:", color=color.value)
+    last_day_for_wid = None  # should probably be part of the input ui for SoC, but too lazy.
+    # better practice would be to utilize ui models, but maybe that's too much for python
+    for command in commands:
+        embed.add_field(name=f"`${command.name}`",
+                        value=f"{command.description}")
     return embed
 
 

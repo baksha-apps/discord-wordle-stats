@@ -5,7 +5,7 @@ import time
 import discord
 from dotenv import dotenv_values
 
-from ui import make_leaderboard_embed, make_wordle_day_embed, make_image_embed, Color
+from ui import make_leaderboard_embed, make_wordle_day_embed, make_image_embed, Color, make_help_embed, Command
 from wordle import is_wordle_share, find_try_ratio, WordleStatistics, find_wordle_id
 
 config = dotenv_values(".env")
@@ -127,8 +127,17 @@ class WordleClient(discord.Client):
                     positive_reactions = ["AYOOOO", "YURRRRR", "LETS GOOOOO", "LOOK @YOU", "WATCH THIS"]
                     negative_reactions = ["oh no", "sadly", "ain't no way", "sheesh...", "its not the best...",
                                           "english not ur best"]
-                    positive_emojis = ["📈", "🆙", "<:dhands:741347089568759829>"]
-                    negative_emojis = ["🔻", "<:damn:800218841547931700>", "<:yikes:939003738197205042>"]
+                    positive_emojis = ["📈",
+                                       "🆙",
+                                       "<:dhands:702525589395079220>",
+                                       "<:1000:805171005265674281>",
+                                       "<:peepoSip:711248715532468317>"]
+                    negative_emojis = ["🔻",
+                                       "<:coolcry:911489931233341460>",
+                                       "<:tomStare:800220225794211860>",
+                                       "<:damn:800218841547931700>",
+                                       "<:yikes:939003738197205042>",
+                                       "<:glassRNG:704048329356607538>"]
                     reaction_for_change = random.choice(positive_reactions if difference > 0 else negative_reactions)
                     emoji_for_change = random.choice(positive_emojis if difference > 0 else negative_emojis)
 
@@ -208,11 +217,15 @@ class WordleClient(discord.Client):
             return
 
         if message.content.startswith('$help'):
-            await message.channel.send(
-                'If this is an emergency, please dial 911. \n'
-                'Supported commands: `$today`,`$leaderboard`, `$all-time-leaderboard`, '
-                '`$wordle <id>`, `$hello`, `$help`'
-            )
+            commands = [
+                Command("today", "Shows today's stats"),
+                Command("leaderboard", "Shows monthly stats"),
+                Command("all-time-leaderboard", "Shows all-time stats"),
+                Command("wordle <id>", "Shows stats for a Wordle"),
+                Command("activity", "Shows amount of players over time"),
+            ]
+            embed = make_help_embed(commands)
+            await message.channel.send(embed=embed)
             return
 
         if message.content.startswith('$time'):
