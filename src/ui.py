@@ -7,8 +7,17 @@ import pandas
 
 from wordle import find_solution
 
+from enum import Enum
 
-def make_leaderboard_embed(df: pandas.DataFrame, title: str = "__**All-time Leaderboard:**__"):
+
+class Color(Enum):
+    RED = discord.Color.from_rgb(204, 0, 0)
+    BLUE = discord.Color.from_rgb(70, 130, 180)
+
+
+def make_leaderboard_embed(df: pandas.DataFrame,
+                           title: str = "__**All-time Leaderboard:**__",
+                           color: Color = Color.RED):
     """
     :param: df: pandas.DataFrame
         Requires DataFrame with the following dtypes
@@ -18,7 +27,7 @@ def make_leaderboard_embed(df: pandas.DataFrame, title: str = "__**All-time Lead
             win_percent                  float64
             started_date          datetime64[ns]
     """
-    embed = discord.Embed(title=title, color=discord.Color.from_rgb(204, 0, 0))
+    embed = discord.Embed(title=title, color=color.value)
     for index, row in df.iterrows():
         embed.add_field(name=f'**{index + 1}) {row.player_id}**',
                         value=

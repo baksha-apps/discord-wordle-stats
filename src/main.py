@@ -5,7 +5,7 @@ import time
 import discord
 from dotenv import dotenv_values
 
-from ui import make_leaderboard_embed, make_wordle_day_embed, make_image_embed
+from ui import make_leaderboard_embed, make_wordle_day_embed, make_image_embed, Color
 from wordle import is_wordle_share, find_try_ratio, WordleStatistics, find_wordle_id
 
 config = dotenv_values(".env")
@@ -182,7 +182,9 @@ class WordleClient(discord.Client):
                 .channel_states \
                 .get(channel_id) \
                 .compute_monthly_stats_df()
-            embed = make_leaderboard_embed(monthly_stats_df, title= "__**Monthly Leaderboard:**__")
+            embed = make_leaderboard_embed(monthly_stats_df,
+                                           title= "__**Monthly Leaderboard:**__",
+                                           color= Color.BLUE)
             await message.channel.send(embed=embed)
             return
 
