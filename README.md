@@ -10,14 +10,11 @@ Use this bot in your server to enrich your Wordle game play in Discord!
 
 ## Features
 
-
 ### `$today`
 Shows a ranking of today's games played. 
 - View today's solution by clicking on the spoiler tag!
 - Ranked in order of priority: won on, and created date.
 <img width="369" alt="image" src="https://user-images.githubusercontent.com/15055008/153735799-7415352a-1518-4f88-b026-021e334ae804.png">
-
-
 
 ### `$leaderboard`
 Shows a ranking of the games played this month. 
@@ -29,7 +26,6 @@ Shows a ranking of all the games played.
 - Ranked in order of priority: Average attempt won on, total games, win percentage, and when you first started playing.
 <img width="474" alt="image" src="https://user-images.githubusercontent.com/15055008/153767740-c9b8b945-3d84-4f8c-92d9-6154e2cb9db4.png">
 
-
 ### `$wordle <id>`
 Shows a ranking of a played Wordle. 
 `$wordle 230` = Wordle 230
@@ -37,12 +33,10 @@ Shows a ranking of a played Wordle.
 - Ranked in order of priority: won on, and created date.
 <img width="403" alt="image" src="https://user-images.githubusercontent.com/15055008/153735776-def40efa-041c-47a1-b604-197ce5023f23.png">
 
-
 ### `$activity`
 Shows player activity over time. 
 
 <img width="406" alt="image" src="https://user-images.githubusercontent.com/15055008/166006788-2806ba3f-42ac-4c0f-86dd-911ac369b780.png">
-
 
 ## Contributing 
 ```mermaid
