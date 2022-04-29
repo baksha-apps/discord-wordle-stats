@@ -18,11 +18,11 @@ Shows a ranking of today's games played.
 <img width="369" alt="image" src="https://user-images.githubusercontent.com/15055008/153735799-7415352a-1518-4f88-b026-021e334ae804.png">
 
 
+
 ### `$leaderboard`
 Shows a ranking of the games played this month. 
 - Ranked in order of priority: Average attempt won on, total games, win percentage, and when you first started playing.
-<img width="474" alt="image" src="https://user-images.githubusercontent.com/15055008/166006509-7aea71fc-f60c-4957-ae6d-01bb58720de0.png">
-
+<img width="474" alt="166006509-7aea71fc-f60c-4957-ae6d-01bb58720de0" src="https://user-images.githubusercontent.com/15055008/166008649-3ef53489-d184-4b63-a1e9-989261493c18.png">
 
 ### `$all-time-leaderboard`
 Shows a ranking of all the games played. 
