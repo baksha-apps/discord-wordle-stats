@@ -11,3 +11,4 @@ __pycache__
 .ipynb_checkpoints
 .idea/
 src/workspace.code-workspace
+Playground.ipynb

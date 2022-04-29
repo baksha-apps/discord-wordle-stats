@@ -1,77 +1,28 @@
-from datetime import datetime
-from dotenv import dotenv_values
+import os
+import random
+import time
+
 import discord
-import pandas
-import humanize
-from wordle import is_wordle_share, find_try_ratio, WordleHistoryState, find_wordle_id, find_solution
+from dotenv import dotenv_values
+
+from ui import make_leaderboard_embed, make_wordle_day_embed, make_image_embed, Color, make_help_embed, Command
+from wordle import is_wordle_share, find_try_ratio, WordleStatistics, find_wordle_id
 
 config = dotenv_values(".env")
+
+# Timezone config injection
+# set new timezone - defaults to EST, but configurable
+TIME_ZONE = config.get('TZ_CONFIG') if config.get('TZ_CONFIG') else 'US/Eastern'
+os.environ['TZ'] = TIME_ZONE
+time.tzset()
+
+# TESTING PURPOSES: Allows you to specify a channel id to get input data from,
+# but only responds to incoming command channel. OPTIONAL.
+REDIRECT_CHANNEL = int(config.get('REDIRECTED_INPUT_CHANNEL')) if config.get('REDIRECTED_INPUT_CHANNEL') else None
 
 # Custom VARS for custom situational logic. Does not affect using this bot in other servers.
 WORDLE_DAILY_CHANNEL = 937390252576886845
 MAIN_CHANNEL = 731718737694162977
-
-# TESTING PURPOSES: Allows you to specify a channel id to get input data from,
-# but only responds to incoming command channel. OPTIONAL.
-REDIRECT_CHANNEL = None
-if config.get('REDIRECTED_INPUT_CHANNEL'):
-    REDIRECT_CHANNEL = int(config.get('REDIRECTED_INPUT_CHANNEL'))
-
-
-def __make_leaderboard_embed__(title: str, df: pandas.DataFrame):
-    """
-    :param: df: pandas.DataFrame
-        Requires DataFrame with the following dtypes
-            player_id                     object
-            total_games                    int64
-            avg_won_on_attempt           float64
-            win_percent                  float64
-            started_date          datetime64[ns]
-    """
-    embed = discord.Embed(title=f"__**{title}:**__", color=discord.Color.from_rgb(204, 0, 0))
-    for index, row in df.iterrows():
-        embed.add_field(name=f'**{index + 1}) {row.player_id}**',
-                        value=
-                        f'Total Games: `{row.total_games}`\n'
-                        f'> Since: `{row.started_date.strftime("%m/%d/%Y").strip()}`\n'
-                        f'> Averaging: `{row.avg_won_on_attempt}/6`\n'
-                        f'> Win %: `{row.win_percent}`\n',
-                        inline=True)
-    return embed
-
-
-def __make_wordle_day_embed__(wid: int, avg_turn_won: float, percent_of_winners: float, df: pandas.DataFrame):
-    """
-    :param: df pandas.DataFrame
-    with columns: *sorted
-        player_id                  object
-        wordle_id                  object
-        won_on_try_num            float64
-        total_num_tries            object
-        created_date       datetime64[ns]
-    """
-    embed = discord.Embed(title=f"__**Wordle {wid}:**__", color=discord.Color.from_rgb(255, 255, 0))
-    last_day_for_wid = None  # should probably be part of the input ui for SoC, but too lazy.
-    # better practice would be to utilize ui models, but maybe that's too much for python
-    for index, row in df.iterrows():
-        embed.add_field(name=f'**{index + 1}) {row.player_id}**',
-                        value=f'> `{row.won_on_try_num}/6`\n' +
-                              (f'> *{humanize.naturaltime(row.created_date)}*'
-                               if row.created_date.date() == datetime.now().date()
-                               else f"> *{row.created_date.strftime('%-I:%M%p')}*"),
-                        inline=True)
-        last_day_for_wid = row.created_date
-    embed.add_field(name=f'__**Overall Daily Statistics**__',
-                    value=f'<:thonking:726838160809787464>',
-                    inline=False)
-    embed.add_field(name=f"How many won?",
-                    value=f"> `{percent_of_winners * 100}`%")
-    embed.add_field(name=f"Average Attempts",
-                    value=f"> `{avg_turn_won}`")
-    embed.add_field(name=f"Solution:",
-                    value=f"> ||{find_solution(wid=wid).upper()}||")
-    embed.set_footer(text=f"{last_day_for_wid.strftime('%B %d, %Y')}")
-    return embed
 
 
 class WordleClient(discord.Client):
@@ -80,14 +31,14 @@ class WordleClient(discord.Client):
         super().__init__(loop=loop, **options)
         self.channel_states = dict()  # <channel_id str: WordleHistoryState>
 
-    async def __channel_import__(self, channel_id: int):
+    async def __channel_import__(self, channel_id: int, import_amount: int = 3000):
         """
         Imports last 1k messages into the bot state.
         There is additional custom logic for my personal server if the conditions are met.
         """
         channel = self.get_channel(channel_id)
-        messages = await channel.history(limit=1000).flatten()
-        self.channel_states[channel_id] = WordleHistoryState()
+        self.channel_states[channel_id] = WordleStatistics(timezone=TIME_ZONE)
+        messages = await channel.history(limit=import_amount).flatten()
         for message in messages:
             if message.author.bot is True:
                 continue
@@ -98,23 +49,26 @@ class WordleClient(discord.Client):
         # so we want to port it over to the wordle channel board instead.
         if channel_id == WORDLE_DAILY_CHANNEL:
             channel = self.get_channel(MAIN_CHANNEL)
-            messages = await channel.history(limit=1000).flatten()
+            messages = await channel.history(limit=import_amount).flatten()
             for message in messages:
                 await self.__add_to_state__(message, WORDLE_DAILY_CHANNEL)
 
-    async def __add_to_state__(self, message: discord.Message, overrided_leaderboard_id: int = None):
+    async def __add_to_state__(self,
+                               message: discord.Message,
+                               override_leaderboard_id: int = None,
+                               is_repliable: bool = False):
         """
         Process message from anywhere and add it to the state of the bot.
 
-        :param discord.Message message: 
+        :param discord.Message message:
             - Message being sent.
             - Adds the Wordle Game to the the channel's state.
-        :param str overrided_leaderboard_id: 
+        :param str override_leaderboard_id:
             Instead of adding this message to the original channel's leader-board, you may override it to another board.
             This functionality is built-in for consolidating leader-boards from multiple channels into just one.
             (if needed)
         """
-        channel_id = overrided_leaderboard_id if overrided_leaderboard_id else message.channel.id
+        channel_id = override_leaderboard_id if override_leaderboard_id else message.channel.id
         message_content = message.content.strip()
         if message.author.bot is True or not is_wordle_share(message_content):
             return
@@ -126,11 +80,75 @@ class WordleClient(discord.Client):
         header = message_content.split('\n')[0]
         wordle_id = find_wordle_id(header)
         won_on_try, max_tries = find_try_ratio(header)
-        self.channel_states[channel_id].add_wordle(player_id=message.author.display_name,
+
+        self.channel_states[channel_id].add_wordle(player_id=str(message.author),
                                                    wordle_id=wordle_id,
                                                    won_on_try_num=won_on_try,
                                                    total_num_tries=max_tries,
                                                    created_date=message.created_at)
+
+        if is_repliable:
+
+            compliments = [
+                "nice one",
+                "that's what we like to see",
+                "alright mr dictionary",
+                "well done",
+                "round of applause for this guy",
+                "congratulations"
+            ]
+            soft_insults = [
+                "you've done better",
+                "are you new here",
+                "mediocrity",
+                "ok",
+                f"{won_on_try} attempts.... ok..",
+            ]
+            hard_insults = [
+                # "why did you post this here?",
+                "i too do not have eyes",
+                # "with a score like that, just know that participation matters",
+                # "honestly just start cheating",
+                "use `$today` to see the answer since you ain't catch it",
+                "https://www.dictionary.com/"
+            ]
+
+            if not won_on_try:
+                await message.channel.send(f"{message.author.mention} {random.choice(hard_insults)}")
+            elif won_on_try <= 5:
+                print(f"{message.author.mention} {random.choice(compliments)}")
+            else:
+                await message.channel.send(f"{message.author.mention} {random.choice(soft_insults)}")
+
+            async def send_rank_change(monthly=False):
+                difference = self.channel_states[channel_id].find_latest_rank_change(str(message.author),
+                                                                                     monthly=monthly)
+                if difference:
+                    positive_reactions = ["AYOOOO", "YURRRRR", "LETS GOOOOO", "LOOK @YOU", "WATCH THIS"]
+                    negative_reactions = ["oh no", "sadly", "ain't no way", "sheesh...", "its not the best...",
+                                          "english not ur best"]
+                    positive_emojis = ["📈",
+                                       "🆙",
+                                       "<:dhands:702525589395079220>",
+                                       "<:1000:805171005265674281>",
+                                       "<:peepoSip:711248715532468317>"]
+                    negative_emojis = ["🔻",
+                                       "<:coolcry:911489931233341460>",
+                                       "<:tomStare:800220225794211860>",
+                                       "<:damn:800218841547931700>",
+                                       "<:yikes:939003738197205042>",
+                                       "<:glassRNG:704048329356607538>"]
+                    reaction_for_change = random.choice(positive_reactions if difference > 0 else negative_reactions)
+                    emoji_for_change = random.choice(positive_emojis if difference > 0 else negative_emojis)
+
+                    leaderboard = "all-time" if not monthly else "monthly"
+                    await message.channel.send(
+                        f"{emoji_for_change} {reaction_for_change} {emoji_for_change}\n"
+                        f"{'+' if difference > 0 else ''}{difference} {leaderboard} rank\n"
+                        f"{message.author.mention}"
+                    )
+            await send_rank_change()
+            await send_rank_change(monthly=True)
 
     async def on_ready(self):
         print('We have logged in as {0.user}'.format(self))
@@ -138,13 +156,20 @@ class WordleClient(discord.Client):
     async def on_message(self, message):
         if message.author.bot:
             return
+        ### import if needed
+        channel_id = message.channel.id \
+            if not REDIRECT_CHANNEL \
+            else REDIRECT_CHANNEL
 
+        if channel_id not in self.channel_states:
+            await self.__channel_import__(channel_id)
+        #####
         if message.content == '$shutdown':
             await message.channel.send('Goodbye!')
             exit(0)
 
         if message.content.startswith('$hello'):
-            await message.channel.send('Hello!\n v1.0.0 \nBetter Wordle Bot says hello!')
+            await message.channel.send('Hello!\n v1.0.1 \nBetter Wordle Bot says hello!')
             return
 
         if message.content == '$reset':
@@ -152,63 +177,69 @@ class WordleClient(discord.Client):
             await message.channel.send('The wordle bot has reset the state.')
             return
 
-        if message.content == '$leaderboard':
-            channel_id = message.channel.id \
-                if not REDIRECT_CHANNEL \
-                else REDIRECT_CHANNEL
-            if channel_id not in self.channel_states:
-                await self.__channel_import__(channel_id)
+        if message.content == '$all-time-leaderboard':
             all_stats_df = self \
                 .channel_states \
                 .get(channel_id) \
                 .compute_all_stats_df()
-            embed = __make_leaderboard_embed__("All-time Leaderboard",
-                                               all_stats_df)
+            embed = make_leaderboard_embed(all_stats_df)
+            await message.channel.send(embed=embed)
+            return
+
+        if message.content == '$leaderboard':
+            monthly_stats_df = self \
+                .channel_states \
+                .get(channel_id) \
+                .compute_monthly_stats_df()
+            embed = make_leaderboard_embed(monthly_stats_df,
+                                           title= "__**Monthly Leaderboard:**__",
+                                           color= Color.BLUE)
             await message.channel.send(embed=embed)
             return
 
         if message.content == '$today':
-            channel_id = message.channel.id \
-                if not REDIRECT_CHANNEL \
-                else REDIRECT_CHANNEL
-            if channel_id not in self.channel_states:
-                await self.__channel_import__(channel_id)
             wid, avg_turn_won, percent_of_winners, df = self \
                 .channel_states \
                 .get(channel_id) \
                 .compute_daily_df()
-            embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
+            embed = make_wordle_day_embed(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
             return
 
         if message.content.startswith('$wordle'):
-            channel_id = message.channel.id \
-                if not REDIRECT_CHANNEL \
-                else REDIRECT_CHANNEL
             wordle_id = int(message.content.split(" ")[1])
-            if channel_id not in self.channel_states:
-                await self.__channel_import__(channel_id)
             wid, avg_turn_won, percent_of_winners, df = self \
                 .channel_states \
                 .get(channel_id) \
                 .compute_day_df_for_wordle(wordle_id)
-            embed = __make_wordle_day_embed__(wid, avg_turn_won, percent_of_winners, df)
+            embed = make_wordle_day_embed(wid, avg_turn_won, percent_of_winners, df)
             await message.channel.send(embed=embed)
             return
 
         if message.content.startswith('$help'):
-            await message.channel.send(
-                'If this is an emergency, please dial 911. \n'
-                'Supported commands: `$today`,`$leaderboard`, `$wordle <id>`, `$hello`, `$help`'
-            )
+            commands = [
+                Command("today", "Shows today's stats"),
+                Command("leaderboard", "Shows monthly stats"),
+                Command("all-time-leaderboard", "Shows all-time stats"),
+                Command("wordle <id>", "Shows stats for a Wordle"),
+                Command("activity", "Shows amount of players over time"),
+            ]
+            embed = make_help_embed(commands)
+            await message.channel.send(embed=embed)
             return
 
         if message.content.startswith('$time'):
-            await message.channel.send(f"**Time:** {datetime.now().strftime('%l:%M%p %Z on %b %d, %Y')}")
+            await message.channel.send(f"**Time:** {time.strftime('%l:%M%p %Z on %b %d, %Y')}")
+            return
+
+        if message.content.startswith('$activity'):
+            activity_stream = self.channel_states[channel_id].draw_activity()
+            embed, image = make_image_embed("Players playing", activity_stream)
+            await message.channel.send(embed=embed, file=image)
             return
 
         # Process these messages so we don't need to recalculate everything again.
-        await self.__add_to_state__(message)
+        await self.__add_to_state__(message, is_repliable=True)
 
 
 client = WordleClient()
