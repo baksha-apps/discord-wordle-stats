@@ -88,12 +88,12 @@ def make_help_embed(commands: [Command], color: Color = Color.TURQ):
         commands:               [str]
 
     """
-    embed = discord.Embed(title=f":sos: __**Wordle Bot**__ :sos:", color=color.value)
-    last_day_for_wid = None  # should probably be part of the input ui for SoC, but too lazy.
-    # better practice would be to utilize ui models, but maybe that's too much for python
-    for command in commands:
-        embed.add_field(name=f"`${command.name}`",
-                        value=f"{command.description}")
+    embed = discord.Embed(title=f":sos: __**Wordle Bot**__ :sos:",
+                          color=color.value)
+    for i, command in enumerate(commands):
+        embed.add_field(name=f"{i + 1}) `${command.name}`",
+                        value=f"> {command.description}",
+                        inline=False)
     return embed
 
 
