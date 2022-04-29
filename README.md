@@ -1,4 +1,4 @@
-# Wordle Ranking Discord Bot
+# Wordle Ranking Discord Bot - FORK TEST
 
 Use this bot in your server to enrich your Wordle game play in Discord!
 
