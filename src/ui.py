@@ -1,27 +1,12 @@
-from dataclasses import dataclass
-from datetime import datetime
 import io
+from datetime import datetime
 
 import discord
 import humanize
 import pandas
 
+from models import Color, Command, Emote
 from wordle import find_solution
-
-from enum import Enum
-
-
-class Color(Enum):
-    RED = discord.Color.from_rgb(204, 0, 0)
-    BLUE = discord.Color.from_rgb(70, 130, 180)
-    ORANGE = discord.Color.from_rgb(255, 111, 0)
-    TURQ = discord.Color.from_rgb(95, 232, 182)
-
-
-@dataclass(frozen=True)
-class Command:
-    name: str
-    description: str
 
 
 def make_leaderboard_embed(df: pandas.DataFrame,
@@ -70,7 +55,7 @@ def make_wordle_day_embed(wid: int, avg_turn_won: float, percent_of_winners: flo
                         inline=True)
         last_day_for_wid = row.created_date
     embed.add_field(name=f'__**Overall Daily Statistics**__',
-                    value=f'<:thonking:726838160809787464>',
+                    value=Emote.THONKING.value,
                     inline=False)
     embed.add_field(name=f"How many won?",
                     value=f"> `{percent_of_winners * 100}`%")
