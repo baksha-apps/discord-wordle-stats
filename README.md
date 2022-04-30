@@ -4,8 +4,8 @@ Use this bot in your server to enrich your Wordle game play in Discord!
 
 **Technical Notes**
 
-- This project was primarily created to learn about Docker, GitHub Actions, Self-Hosting GH Runners, and testing in Python.
-- It has many optimization points and areas of improvement before becoming a production ready Discord bot, but it works! 
+- This project samples Docker, GitHub Actions, Self-Hosting GH Runners, and testing in Python.
+- It has many optimization points and areas of improvement before becoming a "production" ready Discord bot, but it works super well! 
 - See [issues](https://github.com/baksha97/discord-wordle-stats/issues) to file a bug, optimization, or QoL enchancement!
 
 ## Features
