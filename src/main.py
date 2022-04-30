@@ -19,7 +19,7 @@ time.tzset()
 
 # TESTING PURPOSES: Allows you to specify a channel id to get input data from,
 # but only responds to incoming command channel. OPTIONAL.
-REDIRECT_CHANNEL = None #int(config.get('REDIRECTED_INPUT_CHANNEL')) if config.get('REDIRECTED_INPUT_CHANNEL') else None
+REDIRECT_CHANNEL = int(config.get('REDIRECTED_INPUT_CHANNEL')) if config.get('REDIRECTED_INPUT_CHANNEL') else None
 
 # Custom VARS for custom situational logic. Does not affect using this bot in other servers.
 WORDLE_DAILY_CHANNEL = 937390252576886845
