@@ -55,7 +55,7 @@ def make_wordle_day_embed(wid: int, avg_turn_won: float, percent_of_winners: flo
                         inline=True)
         last_day_for_wid = row.created_date
     embed.add_field(name=f'__**Overall Daily Statistics**__',
-                    value=Emote.THONKING,
+                    value=Emote.THONKING.value,
                     inline=False)
     embed.add_field(name=f"How many won?",
                     value=f"> `{percent_of_winners * 100}`%")
