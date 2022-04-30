@@ -5,8 +5,8 @@ import time
 import discord
 from dotenv import dotenv_values
 
-from models import Command, Emote, Reaction
-from ui import make_leaderboard_embed, make_wordle_day_embed, make_image_embed, Color, make_help_embed
+from models import Command, Emote, Reaction, Color
+from ui import make_leaderboard_embed, make_wordle_day_embed, make_image_embed, make_help_embed
 from wordle import is_wordle_share, find_try_ratio, WordleStatistics, find_wordle_id
 
 config = dotenv_values(".env")
@@ -19,7 +19,7 @@ time.tzset()
 
 # TESTING PURPOSES: Allows you to specify a channel id to get input data from,
 # but only responds to incoming command channel. OPTIONAL.
-REDIRECT_CHANNEL = int(config.get('REDIRECTED_INPUT_CHANNEL')) if config.get('REDIRECTED_INPUT_CHANNEL') else None
+REDIRECT_CHANNEL = None #int(config.get('REDIRECTED_INPUT_CHANNEL')) if config.get('REDIRECTED_INPUT_CHANNEL') else None
 
 # Custom VARS for custom situational logic. Does not affect using this bot in other servers.
 WORDLE_DAILY_CHANNEL = 937390252576886845

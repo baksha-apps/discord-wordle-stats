@@ -1,8 +1,8 @@
 import io
 from datetime import datetime, timedelta
 
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import ui
 from wordle import WordleStatistics
@@ -39,6 +39,7 @@ def test_make_wordle_day_embed():
     # then
     _ = ui.make_wordle_day_embed(wordle_id, avg_turn_won, percent_of_winners, df)
 
+
 def test_image_embed():
     data_stream = io.BytesIO()
 
@@ -52,4 +53,3 @@ def test_image_embed():
     # Reset point back to beginning of stream
     data_stream.seek(0)
     _ = ui.make_image_embed("Test Title", data_stream)
-
