@@ -5,7 +5,7 @@ import discord
 import humanize
 import pandas
 
-from models import Color
+from models import Color, Command
 from wordle import find_solution
 
 
