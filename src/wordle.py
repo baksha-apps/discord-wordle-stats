@@ -47,6 +47,7 @@ class WordleStatistics:
     def __init__(self, timezone: str = 'US/Eastern'):
         self.__all_time_rankings_before_last_add__ = None
         self.__monthly_rankings_before_last_add__ = None
+        self.__last_play_date__ = None
         self.master_wordle_df = pd.DataFrame(columns=[
             'player_id',  # str
             'wordle_id',  # int
@@ -60,12 +61,12 @@ class WordleStatistics:
                    created_date: datetime):
         self.__all_time_rankings_before_last_add__ = self.current_all_time_leaderboard_ids_ranked()
         self.__monthly_rankings_before_last_add__ = self.current_monthly_leaderboard_ids_ranked()
-        # Reset monthly rankings on new month if needed
-        df = self.__make_sanitized_wordle_df__()
-        if not df.empty:
-            last_play_month = df.created_date.max().month
-            if last_play_month and last_play_month < created_date.month:
-                self.__monthly_rankings_before_last_add__ = None
+        self.__last_play_date__ = max(created_date, self.__last_play_date__) \
+            if self.__last_play_date__ \
+            else created_date
+        # Reset `self.__monthly_rankings_before_last_add__` on new latest month
+        if self.__last_play_date__.month < created_date.month:
+            self.__monthly_rankings_before_last_add__ = None
 
         self.master_wordle_df = self.master_wordle_df.append({'player_id': player_id,
                                                               'wordle_id': wordle_id,
