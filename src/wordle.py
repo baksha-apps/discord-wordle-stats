@@ -40,13 +40,15 @@ def find_try_ratio(wordle_share_msg_header: str) -> (Optional[int], int):
 
 
 # State
-
-
 class WordleStatistics:
 
     def __init__(self, timezone: str = 'US/Eastern'):
+        """
+        :param timezone: The timezone that the Wordle Statistics will sanitize the data on.
+        """
         self.__all_time_rankings_before_last_add__ = None
         self.__monthly_rankings_before_last_add__ = None
+        self.__last_play_date__ = None
         self.master_wordle_df = pd.DataFrame(columns=[
             'player_id',  # str
             'wordle_id',  # int
@@ -56,16 +58,21 @@ class WordleStatistics:
         ])
         self.timezone = timezone
 
-    def add_wordle(self, player_id: str, wordle_id: int, won_on_try_num: Optional[int], total_num_tries: int,
+    def add_wordle(self,
+                   player_id: str,
+                   wordle_id: int,
+                   won_on_try_num: Optional[int],
+                   total_num_tries: int,
                    created_date: datetime):
         self.__all_time_rankings_before_last_add__ = self.current_all_time_leaderboard_ids_ranked()
         self.__monthly_rankings_before_last_add__ = self.current_monthly_leaderboard_ids_ranked()
-        # Reset monthly rankings on new month if needed
-        df = self.__make_sanitized_wordle_df__()
-        if not df.empty:
-            last_play_month = df.created_date.max().month
-            if last_play_month and last_play_month < created_date.month:
-                self.__monthly_rankings_before_last_add__ = None
+        # Reset `self.__monthly_rankings_before_last_add__` on new latest month
+        if self.__last_play_date__ and self.__last_play_date__.month < created_date.month:
+            self.__monthly_rankings_before_last_add__ = None
+        # Update last play date
+        self.__last_play_date__ = max(created_date, self.__last_play_date__) \
+            if self.__last_play_date__ \
+            else created_date
 
         self.master_wordle_df = self.master_wordle_df.append({'player_id': player_id,
                                                               'wordle_id': wordle_id,
@@ -89,13 +96,13 @@ class WordleStatistics:
         return list(df.player_id) if not df.empty else []
 
     def find_latest_rank_change(self, player_id, monthly=False):
-        '''
+        """
         Used to check if a players most recent game changed their standing in the leaderboard.
 
         :returns: <int> difference of rank after last game was played for a given player.
         if the player hasn't played before,
             None
-        '''
+        """
         if monthly:
             if not self.__monthly_rankings_before_last_add__ \
                     or player_id not in self.__monthly_rankings_before_last_add__:
@@ -117,7 +124,7 @@ class WordleStatistics:
         to prepare each record individually instead of repeatedly in batches.
             - Prevents duplicate counts of shares.
                 - it would be better if we can just overwrite duplicates on add_wordle()
-            - Does handles funny biz from discord.py package that requires some timezone manipulation
+            - Does handle funny biz from discord.py package that requires some timezone manipulation
         """
         # clearing up duplicate entries
         wordle_df = self.master_wordle_df \
@@ -241,9 +248,7 @@ class WordleStatistics:
 
         df = self.__make_sanitized_wordle_df__()
         data = df.created_date.dt.date.value_counts()
-        ax = data.plot(x='Regional indicator', y='Ladder score')
-        # fig, ax = plt.subplots()
-        # fig.autofmt_xdate()
+        _ = data.plot(x='Regional indicator', y='Ladder score')
         plt.xticks(rotation=90)
 
         data_stream = io.BytesIO()
