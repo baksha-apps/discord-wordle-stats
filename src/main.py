@@ -136,7 +136,7 @@ class WordleClient(discord.Client):
                                        "<:coolcry:911489931233341460>",
                                        "<:tomStare:800220225794211860>",
                                        "<:damn:800218841547931700>",
-                                       "<:yikes:939003738197205042>",
+                                       "<:yikes:800219237804539904>",
                                        "<:glassRNG:704048329356607538>"]
                     reaction_for_change = random.choice(positive_reactions if difference > 0 else negative_reactions)
                     emoji_for_change = random.choice(positive_emojis if difference > 0 else negative_emojis)
