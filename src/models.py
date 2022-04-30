@@ -67,6 +67,7 @@ class Emote(Enum):
     DAMN = "<:damn:800218841547931700>"
     YIKES = "<:yikes:939003738197205042>"
     GLASS_RNG = "<:glassRNG:704048329356607538>"
+    THONKING = '<:thonking:726838160809787464>'
 
     @classmethod
     def positives(cls):

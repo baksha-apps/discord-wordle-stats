@@ -5,7 +5,7 @@ import discord
 import humanize
 import pandas
 
-from models import Color, Command
+from models import Color, Command, Emote
 from wordle import find_solution
 
 
@@ -55,7 +55,7 @@ def make_wordle_day_embed(wid: int, avg_turn_won: float, percent_of_winners: flo
                         inline=True)
         last_day_for_wid = row.created_date
     embed.add_field(name=f'__**Overall Daily Statistics**__',
-                    value=f'<:thonking:726838160809787464>',
+                    value=Emote.THONKING,
                     inline=False)
     embed.add_field(name=f"How many won?",
                     value=f"> `{percent_of_winners * 100}`%")

@@ -111,7 +111,7 @@ class WordleClient(discord.Client):
             )
             emoji_for_change = random.choice(
                 Emote.positives() if difference > 0 else Emote.negatives()
-            )
+            ).value
 
             leaderboard = "all-time" if not monthly else "monthly"
             await original_message.channel.send(
