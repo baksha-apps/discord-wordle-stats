@@ -95,6 +95,3 @@ class Emote(Enum):
 class Command:
     name: str
     description: str
-
-
-print(random.choice(Reaction.positives()))
