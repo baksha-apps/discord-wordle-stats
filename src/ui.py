@@ -1,27 +1,12 @@
-from dataclasses import dataclass
-from datetime import datetime
 import io
+from datetime import datetime
 
 import discord
 import humanize
 import pandas
 
+from models import Color
 from wordle import find_solution
-
-from enum import Enum
-
-
-class Color(Enum):
-    RED = discord.Color.from_rgb(204, 0, 0)
-    BLUE = discord.Color.from_rgb(70, 130, 180)
-    ORANGE = discord.Color.from_rgb(255, 111, 0)
-    TURQ = discord.Color.from_rgb(95, 232, 182)
-
-
-@dataclass(frozen=True)
-class Command:
-    name: str
-    description: str
 
 
 def make_leaderboard_embed(df: pandas.DataFrame,
