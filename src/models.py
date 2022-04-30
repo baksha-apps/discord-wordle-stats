@@ -4,6 +4,12 @@ from enum import Enum, unique
 import discord
 
 
+@dataclass(frozen=True)
+class Command:
+    name: str
+    description: str
+
+
 class Reaction(Enum):
     @classmethod
     def positives(cls):
@@ -67,6 +73,7 @@ class Emote(Enum):
     YIKES = "<:yikes:939003738197205042>"
     GLASS_RNG = "<:glassRNG:704048329356607538>"
     THONKING = '<:thonking:726838160809787464>'
+    CLOWN = ':clown:'
 
     @classmethod
     def positives(cls):
@@ -88,10 +95,5 @@ class Emote(Enum):
             Emote.DAMN,
             Emote.YIKES,
             Emote.GLASS_RNG,
+            Emote.CLOWN,
         ]
-
-
-@dataclass(frozen=True)
-class Command:
-    name: str
-    description: str
