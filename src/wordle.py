@@ -60,6 +60,13 @@ class WordleStatistics:
                    created_date: datetime):
         self.__all_time_rankings_before_last_add__ = self.current_all_time_leaderboard_ids_ranked()
         self.__monthly_rankings_before_last_add__ = self.current_monthly_leaderboard_ids_ranked()
+        # Reset monthly rankings on new month if needed
+        df = self.__make_sanitized_wordle_df__()
+        if not df.empty:
+            last_play_month = df.created_date.max().month
+            if last_play_month and last_play_month < created_date.month:
+                self.__monthly_rankings_before_last_add__ = None
+
         self.master_wordle_df = self.master_wordle_df.append({'player_id': player_id,
                                                               'wordle_id': wordle_id,
                                                               'won_on_try_num': won_on_try_num,
@@ -90,13 +97,15 @@ class WordleStatistics:
             None
         '''
         if monthly:
-            if player_id not in self.__monthly_rankings_before_last_add__:
+            if not self.__monthly_rankings_before_last_add__ \
+                    or player_id not in self.__monthly_rankings_before_last_add__:
                 return None
             pre_play_player_rank = self.__monthly_rankings_before_last_add__.index(str(player_id))
             post_play_player_rank = self.current_monthly_leaderboard_ids_ranked().index(str(player_id))
             return pre_play_player_rank - post_play_player_rank
 
-        if player_id not in self.__all_time_rankings_before_last_add__:
+        if not self.__all_time_rankings_before_last_add__ \
+                or player_id not in self.__all_time_rankings_before_last_add__:
             return None
         pre_play_player_rank = self.__all_time_rankings_before_last_add__.index(str(player_id))
         post_play_player_rank = self.current_all_time_leaderboard_ids_ranked().index(str(player_id))
