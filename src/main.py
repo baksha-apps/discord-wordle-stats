@@ -30,7 +30,7 @@ class WordleClient(discord.Client):
 
     def __init__(self, *, loop=None, **options):
         super().__init__(loop=loop, **options)
-        self.channel_states = dict()  # <channel_id str: WordleHistoryState>
+        self.channel_states = dict()  # <channel_id int: WordleHistoryState>
 
     async def __channel_import__(self, channel_id: int, import_amount: int = 5000):
         """
@@ -143,7 +143,7 @@ class WordleClient(discord.Client):
             return
 
         if message.content == '$reset':
-            await self.__channel_import__(message.channel.id)
+            await self.__channel_import__(channel_id)
             await message.channel.send('The wordle bot has reset the state.')
             return
 
