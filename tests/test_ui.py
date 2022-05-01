@@ -1,4 +1,5 @@
 import io
+import os
 from datetime import datetime, timedelta
 
 import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ import pandas as pd
 import ui
 from wordle import WordleStatistics
 
-MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
+MASTER_DF_FIXTURE = pd.read_csv(f'{os.getcwd()}/res/stubbed_messages.csv', parse_dates=['created_date'])
 
 
 # These just verify that they do not throw an error when creating

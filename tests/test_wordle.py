@@ -4,8 +4,9 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 from wordle import is_wordle_share, find_try_ratio, find_wordle_id, WordleStatistics
+import os
 
-MASTER_DF_FIXTURE = pd.read_csv('src/tests/res/stubbed_messages.csv', parse_dates=['created_date'])
+MASTER_DF_FIXTURE = pd.read_csv(f'{os.getcwd()}/res/stubbed_messages.csv', parse_dates=['created_date'])
 
 
 def test_is_wordle_share_true():
@@ -140,7 +141,7 @@ def test_current_leaderboard_ids_ranked():
     sut.add_wordle("BEST_PLAYER", 123, 1, 5, datetime.now())
 
     # when
-    rankings = sut.current_all_time_leaderboard_ids_ranked()
+    rankings = sut.current_all_time_leaderboard_ids_ranked
 
     # then
     assert len(rankings) == len(set(sut.master_wordle_df.player_id))

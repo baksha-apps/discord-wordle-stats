@@ -3,20 +3,14 @@ import re
 from datetime import datetime, date
 from typing import Optional, Tuple
 
-import numpy as np
 import pandas as pd
-
-# the words are hardcoded into the game and WID is really just index
-ALL_WORDLE_SOLUTIONS = np.load("words.npy")
-# nyt has been removing words... we can remove them for parity
-nyt_words_removed = {"agora", "pupal", "lynch", "fibre", "slave", "wench", "pussy"}
-ALL_WORDLE_SOLUTIONS = [word for word in ALL_WORDLE_SOLUTIONS if word not in nyt_words_removed]
 
 
 # Helpers
 
+# Not support anymore... need to find an alternative.
 def find_solution(wid: int) -> str:
-    return ALL_WORDLE_SOLUTIONS[wid]
+    return r"¯\_(ツ)_/¯"
 
 
 def find_wordle_id(wordle_share_msg_header: str) -> int:
