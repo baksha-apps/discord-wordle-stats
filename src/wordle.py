@@ -19,7 +19,7 @@ def find_wordle_id(wordle_share_msg_header: str) -> int:
 
 def is_wordle_share(msg: str) -> bool:
     msg = msg.replace('*', '')
-    return re.match(r'Wordle \d\d\d ./\d\n\n[⬛⬜🟩🟨]{5}', msg) is not None
+    return re.match(r"Wordle \d\d\d ./\d\n\n[⬛⬜🟩🟨]{5}", msg) is not None
 
 
 def find_try_ratio(wordle_share_msg_header: str) -> Tuple[Optional[int], int]:
