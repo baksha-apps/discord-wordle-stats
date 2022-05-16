@@ -97,6 +97,3 @@ class Emote(Enum):
             Emote.GLASS_RNG,
             Emote.CLOWN,
         ]
-
-print(Emote.positives())
-print(Emote.negatives())

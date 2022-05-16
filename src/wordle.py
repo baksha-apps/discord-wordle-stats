@@ -130,11 +130,15 @@ class WordleStatistics:
         wordle_df = self.master_wordle_df \
             .sort_values(["created_date"]) \
             .drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
-        # Time funny biz
         if not wordle_df.created_date.empty:
+            # Time funny biz
             wordle_df.created_date = wordle_df.created_date.dt.tz_localize('UTC')
             wordle_df.created_date = wordle_df.created_date.dt.tz_convert(self.timezone)
             wordle_df.created_date = wordle_df.created_date.dt.tz_localize(None)
+            # 7/6 if X
+            x_replacement = max(wordle_df.total_num_tries) + 1
+            wordle_df.won_on_try_num = wordle_df.won_on_try_num.fillna(x_replacement)
+
         return wordle_df
 
     def compute_all_stats_df(self):  #
