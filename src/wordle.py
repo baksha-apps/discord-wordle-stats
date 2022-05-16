@@ -155,7 +155,7 @@ class WordleStatistics:
         # 7/6 if X
         all_stats_df["avg_won_on_attempt"] = 0  # on empty
         if not wordle_df.won_on_try_num.empty:
-            x_replacement = None if wordle_df.won_on_try_num.empty else max(wordle_df.total_num_tries) + 1
+            x_replacement = max(wordle_df.total_num_tries) + 1
             avg_won_on_attempt = wordle_df.won_on_try_num.fillna(x_replacement).groupby(wordle_df.player_id).mean()
             all_stats_df["avg_won_on_attempt"] = avg_won_on_attempt
 
@@ -192,11 +192,10 @@ class WordleStatistics:
         # 7/6 if X
         all_stats_df["avg_won_on_attempt"] = 0  # on empty
         if not wordle_df.won_on_try_num.empty:
-            x_replacement = None if wordle_df.won_on_try_num.empty else max(wordle_df.total_num_tries) + 1
+            x_replacement = max(wordle_df.total_num_tries) + 1
             avg_won_on_attempt = wordle_df.won_on_try_num.fillna(x_replacement).groupby(wordle_df.player_id).mean()
             all_stats_df["avg_won_on_attempt"] = avg_won_on_attempt
 
-        all_stats_df["avg_won_on_attempt"] = groupedby_players.won_on_try_num.mean()
         # there must be a simpler way for getting each person's WIN percentage, right?
         all_stats_df['win_percent'] = (wordle_df[wordle_df['won_on_try_num'].notna()].groupby(
             wordle_df.player_id).size() / wordle_df.groupby(wordle_df.player_id).size()) * 100
