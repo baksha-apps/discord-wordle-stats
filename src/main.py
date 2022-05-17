@@ -56,7 +56,7 @@ class WordleClient(discord.Client):
 
     async def __add_to_state__(self,
                                message: discord.Message,
-                               override_leaderboard_id: int = None,
+                               override_channel_id: int = None,
                                is_repliable: bool = False):
         """
         Process message from anywhere and add it to the state of the bot.
@@ -64,12 +64,12 @@ class WordleClient(discord.Client):
         :param discord.Message message:
             - Message being sent.
             - Adds the Wordle Game to the the channel's state.
-        :param str override_leaderboard_id:
+        :param str override_channel_id:
             Instead of adding this message to the original channel's leader-board, you may override it to another board.
             This functionality is built-in for consolidating leader-boards from multiple channels into just one.
             (if needed)
         """
-        channel_id = override_leaderboard_id if override_leaderboard_id else message.channel.id
+        channel_id = override_channel_id if override_channel_id else message.channel.id
         message_content = message.content.strip()
         if message.author.bot is True or not is_wordle_share(message_content):
             return

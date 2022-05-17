@@ -1,22 +1,16 @@
 import io
 import re
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional, Tuple
 
-import numpy as np
 import pandas as pd
-
-# the words are hardcoded into the game and WID is really just index
-ALL_WORDLE_SOLUTIONS = np.load("words.npy")
-# nyt has been removing words... we can remove them for parity
-nyt_words_removed = {"agora", "pupal", "lynch", "fibre", "slave", "wench", "pussy"}
-ALL_WORDLE_SOLUTIONS = [word for word in ALL_WORDLE_SOLUTIONS if word not in nyt_words_removed]
 
 
 # Helpers
 
+# Not support anymore... need to find an alternative.
 def find_solution(wid: int) -> str:
-    return "n/a"
+    return r"¯\_(ツ)_/¯"
 
 
 def find_wordle_id(wordle_share_msg_header: str) -> int:
@@ -25,12 +19,12 @@ def find_wordle_id(wordle_share_msg_header: str) -> int:
 
 def is_wordle_share(msg: str) -> bool:
     msg = msg.replace('*', '')
-    return re.match(r'Wordle \d\d\d ./\d\n\n[⬛⬜🟩🟨]{5}', msg) is not None
+    return re.match(r"Wordle \d\d\d ./\d\n\n[⬛⬜🟩🟨]{5}", msg) is not None
 
 
-def find_try_ratio(wordle_share_msg_header: str) -> (Optional[int], int):
+def find_try_ratio(wordle_share_msg_header: str) -> Tuple[Optional[int], int]:
     """
-    returns: tuple (attempt, of_tries)
+    returns: Tuple[attempt, of_tries]
     """
     wordle_share_msg_header = wordle_share_msg_header.replace('*', '')
     header = wordle_share_msg_header
@@ -46,9 +40,9 @@ class WordleStatistics:
         """
         :param timezone: The timezone that the Wordle Statistics will sanitize the data on.
         """
-        self.__all_time_rankings_before_last_add__ = None
-        self.__monthly_rankings_before_last_add__ = None
-        self.__last_play_date__ = None
+        self.previous_all_time_rankings_before_last_add = None
+        self.previous_monthly_rankings_before_last_add = None
+        self.last_play_date = None
         self.master_wordle_df = pd.DataFrame(columns=[
             'player_id',  # str
             'wordle_id',  # int
@@ -64,14 +58,14 @@ class WordleStatistics:
                    won_on_try_num: Optional[int],
                    total_num_tries: int,
                    created_date: datetime):
-        self.__all_time_rankings_before_last_add__ = self.current_all_time_leaderboard_ids_ranked()
-        self.__monthly_rankings_before_last_add__ = self.current_monthly_leaderboard_ids_ranked()
-        # Reset `self.__monthly_rankings_before_last_add__` on new latest month
-        if self.__last_play_date__ and self.__last_play_date__.month < created_date.month:
-            self.__monthly_rankings_before_last_add__ = None
+        self.previous_all_time_rankings_before_last_add = self.current_all_time_leaderboard_ids_ranked
+        self.previous_monthly_rankings_before_last_add = self.current_monthly_leaderboard_ids_ranked
+        # Reset `self.previous_monthly_rankings_before_last_add` on new latest month
+        if self.last_play_date and self.last_play_date.month < created_date.month:
+            self.previous_monthly_rankings_before_last_add = None
         # Update last play date
-        self.__last_play_date__ = max(created_date, self.__last_play_date__) \
-            if self.__last_play_date__ \
+        self.last_play_date = max(created_date, self.last_play_date) \
+            if self.last_play_date \
             else created_date
 
         self.master_wordle_df = self.master_wordle_df.append({'player_id': player_id,
@@ -81,6 +75,7 @@ class WordleStatistics:
                                                               'created_date': created_date},
                                                              ignore_index=True)
 
+    @property
     def current_all_time_leaderboard_ids_ranked(self):
         """
         :returns: list<str> ranking all the players
@@ -88,6 +83,7 @@ class WordleStatistics:
         df = self.compute_all_stats_df()
         return list(df.player_id) if not df.empty else []
 
+    @property
     def current_monthly_leaderboard_ids_ranked(self):
         """
         :returns: list<str> ranking all the players
@@ -104,18 +100,18 @@ class WordleStatistics:
             None
         """
         if monthly:
-            if not self.__monthly_rankings_before_last_add__ \
-                    or player_id not in self.__monthly_rankings_before_last_add__:
+            if not self.previous_monthly_rankings_before_last_add \
+                    or player_id not in self.previous_monthly_rankings_before_last_add:
                 return None
-            pre_play_player_rank = self.__monthly_rankings_before_last_add__.index(str(player_id))
-            post_play_player_rank = self.current_monthly_leaderboard_ids_ranked().index(str(player_id))
+            pre_play_player_rank = self.previous_monthly_rankings_before_last_add.index(str(player_id))
+            post_play_player_rank = self.current_monthly_leaderboard_ids_ranked.index(str(player_id))
             return pre_play_player_rank - post_play_player_rank
 
-        if not self.__all_time_rankings_before_last_add__ \
-                or player_id not in self.__all_time_rankings_before_last_add__:
+        if not self.previous_all_time_rankings_before_last_add \
+                or player_id not in self.previous_all_time_rankings_before_last_add:
             return None
-        pre_play_player_rank = self.__all_time_rankings_before_last_add__.index(str(player_id))
-        post_play_player_rank = self.current_all_time_leaderboard_ids_ranked().index(str(player_id))
+        pre_play_player_rank = self.previous_all_time_rankings_before_last_add.index(str(player_id))
+        post_play_player_rank = self.current_all_time_leaderboard_ids_ranked.index(str(player_id))
         return pre_play_player_rank - post_play_player_rank
 
     def __make_sanitized_wordle_df__(self) -> pd.DataFrame:
@@ -224,7 +220,7 @@ class WordleStatistics:
         if top:
             df = df.nlargest(top, 'won_on_try_num')
 
-        df = df.sort_values(["won_on_try_num", "created_date"], ascending=(True, True))
+        df = df.sort_values(["won_on_try_num", "created_date"], ascending=[True, True])
         df = df.reset_index(drop=True)
         return wordle_id, avg_turn_won, percent_of_winners, df
 
@@ -255,14 +251,14 @@ class WordleStatistics:
 
         if top:
             df = df.nlargest(top, 'won_on_try_num')
-        df = df.sort_values(["won_on_try_num", "created_date"], ascending=(True, True))
+        df = df.sort_values(["won_on_try_num", "created_date"], ascending=[True, True])
         df = df.reset_index(drop=True)
         return wid, avg_turn_won, percent_of_winners, df
 
     def draw_activity(self) -> io.BytesIO:
-        '''
+        """
         :return: io.BytesIO of the image drawn
-        '''
+        """
         import matplotlib.pyplot as plt
         plt.style.use("seaborn")
 
