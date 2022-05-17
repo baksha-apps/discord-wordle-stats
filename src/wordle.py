@@ -126,11 +126,12 @@ class WordleStatistics:
         wordle_df = self.master_wordle_df \
             .sort_values(["created_date"]) \
             .drop_duplicates(subset=['player_id', 'wordle_id'], keep='last')
-        # Time funny biz
         if not wordle_df.created_date.empty:
+            # Time funny biz
             wordle_df.created_date = wordle_df.created_date.dt.tz_localize('UTC')
             wordle_df.created_date = wordle_df.created_date.dt.tz_convert(self.timezone)
             wordle_df.created_date = wordle_df.created_date.dt.tz_localize(None)
+
         return wordle_df
 
     def compute_all_stats_df(self):  #
@@ -146,16 +147,21 @@ class WordleStatistics:
         wordle_df = self.__make_sanitized_wordle_df__()
         all_stats_df = pd.DataFrame()
         groupedby_players = wordle_df.groupby(wordle_df.player_id)
-        all_stats_df["total_games"] = groupedby_players.size()
-        all_stats_df["avg_won_on_attempt"] = groupedby_players.won_on_try_num.mean()
+
+        # 7/6 if X
+        all_stats_df["avg_won_on_attempt"] = 0  # on empty
+        if not wordle_df.won_on_try_num.empty:
+            x_replacement = max(wordle_df.total_num_tries) + 1
+            avg_won_on_attempt = wordle_df.won_on_try_num.fillna(x_replacement).groupby(wordle_df.player_id).mean()
+            all_stats_df["avg_won_on_attempt"] = avg_won_on_attempt
+
         # there must be a simpler way for getting each person's WIN percentage, right?
         all_stats_df['win_percent'] = (wordle_df[wordle_df['won_on_try_num'].notna()].groupby(
             wordle_df.player_id).size() / wordle_df.groupby(wordle_df.player_id).size()) * 100
         all_stats_df['started_date'] = groupedby_players.created_date.min()
-        return all_stats_df.sort_values(
-            by=["avg_won_on_attempt", "total_games", "win_percent", "started_date"],
-            ascending=[True, False, False, True]
-        ).round(2).reset_index()
+        all_stats_df["total_games"] = groupedby_players.size()
+        return all_stats_df.sort_values(["avg_won_on_attempt", "total_games", "win_percent", "started_date"],
+                                        ascending=(True, False, False, True)).round(2).reset_index()
 
     def compute_monthly_stats_df(self):  #
         """
@@ -178,16 +184,21 @@ class WordleStatistics:
 
         all_stats_df = pd.DataFrame()
         groupedby_players = wordle_df.groupby(wordle_df.player_id)
-        all_stats_df["total_games"] = groupedby_players.size()
-        all_stats_df["avg_won_on_attempt"] = groupedby_players.won_on_try_num.mean()
+
+        # 7/6 if X
+        all_stats_df["avg_won_on_attempt"] = 0  # on empty
+        if not wordle_df.won_on_try_num.empty:
+            x_replacement = max(wordle_df.total_num_tries) + 1
+            avg_won_on_attempt = wordle_df.won_on_try_num.fillna(x_replacement).groupby(wordle_df.player_id).mean()
+            all_stats_df["avg_won_on_attempt"] = avg_won_on_attempt
+
         # there must be a simpler way for getting each person's WIN percentage, right?
         all_stats_df['win_percent'] = (wordle_df[wordle_df['won_on_try_num'].notna()].groupby(
             wordle_df.player_id).size() / wordle_df.groupby(wordle_df.player_id).size()) * 100
         all_stats_df['started_date'] = groupedby_players.created_date.min()
-        return all_stats_df.sort_values(
-            by=["avg_won_on_attempt", "total_games", "win_percent", "started_date"],
-            ascending=[True, False, False, True]
-        ).round(2).reset_index()
+        all_stats_df["total_games"] = groupedby_players.size()
+        return all_stats_df.sort_values(["avg_won_on_attempt", "total_games", "win_percent", "started_date"],
+                                        ascending=(True, False, False, True)).round(2).reset_index()
 
     def compute_day_df_for_wordle(self, wordle_id: int, top: int = None):
         """
@@ -231,8 +242,13 @@ class WordleStatistics:
         df.wordle_id = pd.to_numeric(df.wordle_id)
         wid = df.wordle_id.value_counts().idxmax()
         percent_of_winners = df.won_on_try_num.notna().mean()
-        df.won_on_try_num = pd.to_numeric(df.won_on_try_num)
-        avg_turn_won = df.won_on_try_num.mean()
+
+        # 7/6 if X
+        avg_turn_won = df.won_on_try_num.mean()  # on empty
+        if not df.empty:
+            x_replacement = max(df.total_num_tries) + 1
+            avg_turn_won = df.won_on_try_num.fillna(x_replacement).mean()
+
         if top:
             df = df.nlargest(top, 'won_on_try_num')
         df = df.sort_values(["won_on_try_num", "created_date"], ascending=[True, True])

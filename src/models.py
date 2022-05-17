@@ -60,7 +60,7 @@ class Color(Enum):
 class Emote(Enum):
     # POSITIVE
     PEEPO_SIP = "<:peepoSip:711248715532468317>"
-    THOUSAND = "<:1000:805171005265674281>"
+    AYAYA = "<:AYAYA:702579819610898513>"
     DHANDS = "<:dhands:702525589395079220>"
     UP = "🆙"
     CHART_UP = "📈"
@@ -70,7 +70,7 @@ class Emote(Enum):
     DOWN = "🔻"
     TOM_STARE = "<:tomStare:800220225794211860>"
     DAMN = "<:damn:800218841547931700>"
-    YIKES = "<:yikes:939003738197205042>"
+    YIKES = "<:yikes:800219237804539904>"
     GLASS_RNG = "<:glassRNG:704048329356607538>"
     THONKING = '<:thonking:726838160809787464>'
     CLOWN = ':clown:'
@@ -79,7 +79,7 @@ class Emote(Enum):
     def positives(cls):
         return [
             Emote.PEEPO_SIP,
-            Emote.THOUSAND,
+            Emote.AYAYA,
             Emote.DHANDS,
             Emote.DAMN,
             Emote.UP,
