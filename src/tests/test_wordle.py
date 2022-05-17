@@ -93,17 +93,17 @@ def test_compute_daily():
     # given
     sut = WordleStatistics()
     sut.master_wordle_df = MASTER_DF_FIXTURE
-    sut.add_wordle("travie", 1000, 1, 5, datetime.now())
-    sut.add_wordle("travis", 1000, None, 5, datetime.now())
-    sut.add_wordle("tarvis", 1000, None, 5, datetime.now() + timedelta(minutes=5))
-    sut.add_wordle("ravis", 1000, 2, 5, datetime.now() + timedelta(minutes=10))
+    sut.add_wordle("travie", 1000, 1, 6, datetime.now())
+    sut.add_wordle("travis", 1000, None, 6, datetime.now())
+    sut.add_wordle("tarvis", 1000, None, 6, datetime.now() + timedelta(minutes=5))
+    sut.add_wordle("ravis", 1000, 2, 6, datetime.now() + timedelta(minutes=10))
 
     # when
     wid, avg_turn_won, percent_of_winners, df = sut.compute_daily_df()
 
     # then
     assert wid == 1000
-    assert avg_turn_won == 1.5
+    assert avg_turn_won == 4.25
     assert percent_of_winners == .5
     assert df.player_id.count() == 4
     assert df.iloc[0].player_id == 'travie'
@@ -126,10 +126,10 @@ def test_compute_all():
     assert df.iloc[1].player_id == 'phantommenace#6507'
     assert df.iloc[2].player_id == 'PHELIX#2475'
     assert df.iloc[3].player_id == 'Kat#3908'
-    assert df.iloc[4].player_id == 'MarkZ#0100'
-    assert df.iloc[5].player_id == 'super bad trav#4632'
-    assert df.iloc[6].player_id == 'dhong#8046'
-    assert df.iloc[7].player_id == 'Lequip#2992'
+    assert df.iloc[4].player_id == 'super bad trav#4632'
+    assert df.iloc[5].player_id == 'dhong#8046'
+    assert df.iloc[6].player_id == 'Lequip#2992'
+    assert df.iloc[7].player_id == 'MarkZ#0100'
 
 
 def test_current_leaderboard_ids_ranked():
@@ -149,10 +149,10 @@ def test_current_leaderboard_ids_ranked():
     assert rankings[2] == 'phantommenace#6507'
     assert rankings[3] == 'PHELIX#2475'
     assert rankings[4] == 'Kat#3908'
-    assert rankings[5] == 'MarkZ#0100'
-    assert rankings[6] == 'super bad trav#4632'
-    assert rankings[7] == 'dhong#8046'
-    assert rankings[8] == 'Lequip#2992'
+    assert rankings[5] == 'super bad trav#4632'
+    assert rankings[6] == 'dhong#8046'
+    assert rankings[7] == 'Lequip#2992'
+    assert rankings[8] == 'MarkZ#0100'
 
 
 def test_last_add_changed_rank():
