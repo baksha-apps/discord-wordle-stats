@@ -1,5 +1,5 @@
 # Wordle Ranking Discord Bot
-![example workflow](https://github.com/baksha97/discord-wordle-bot/actions/workflows/integrity_workflow.yml/badge.svg)
+![integrity_workflow](https://github.com/baksha97/discord-wordle-bot/actions/workflows/integrity_workflow.yml/badge.svg)
 
 Use this bot in your server to enrich your Wordle game play in Discord!
 
