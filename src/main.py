@@ -32,7 +32,7 @@ class WordleClient(discord.Client):
         super().__init__(loop=loop, **options)
         self.channel_states = dict()  # <channel_id int: WordleHistoryState>
 
-    async def __channel_import__(self, channel_id: int, import_amount: int = 5000):
+    async def __channel_import__(self, channel_id: int, import_amount: int = 6000):
         """
         Imports last 1k messages into the bot state.
         There is additional custom logic for my personal server if the conditions are met.
